@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
@@ -14,23 +12,21 @@ namespace ProductsWebApi.Controllers
     [Route("api/product")]
     public class ProductController : Controller
     {
-        private readonly EFDbContext _context;
+        private readonly IRepository<ProductEntity> _productRepository;
 
-        public ProductController(EFDbContext context)
+        public ProductController(IRepository<ProductEntity> productRepository)
         {
-            _context = context;
+            _productRepository = productRepository;
         }
 
-        // GET: api/Product
+        // GET: api/product
         [HttpGet]
         public IEnumerable<ProductEntity> GetProductEntity()
         {
-            //var data = new List<ProductEntity>();
-            //data.Add(new ProductEntity() { Id = 0, Name = "name", Price = 99.9 });
-            return _context.Set<ProductEntity>();
+            return _productRepository.GetItemList();
         }
 
-        // GET: api/Product/5
+        // GET: api/product/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductEntity([FromRoute] long id)
         {
@@ -39,7 +35,7 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productEntity = await _context.ProductEntity.SingleOrDefaultAsync(m => m.Id == id);
+            var productEntity = await _productRepository.GetItemById(id);
 
             if (productEntity == null)
             {
@@ -49,8 +45,8 @@ namespace ProductsWebApi.Controllers
             return Ok(productEntity);
         }
 
-        // PUT: api/Product/5
-        [HttpPut("{id}")]
+        // PUT: api/product/5
+        [HttpPut("{id}")] // add token
         public async Task<IActionResult> PutProductEntity([FromRoute] long id, [FromBody] ProductEntity productEntity)
         {
             if (!ModelState.IsValid)
@@ -63,11 +59,11 @@ namespace ProductsWebApi.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(productEntity).State = EntityState.Modified;
+            _productRepository.Update(productEntity);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _productRepository.Save();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -84,8 +80,8 @@ namespace ProductsWebApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Product
-        [HttpPost]
+        // POST: api/product
+        [HttpPost]  // add token
         public async Task<IActionResult> PostProductEntity([FromBody] ProductEntity productEntity)
         {
             if (!ModelState.IsValid)
@@ -93,14 +89,13 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            _context.ProductEntity.Add(productEntity);
-            await _context.SaveChangesAsync();
+            await _productRepository.Create(productEntity);
 
             return CreatedAtAction("GetProductEntity", new { id = productEntity.Id }, productEntity);
         }
 
-        // DELETE: api/Product/5
-        [HttpDelete("{id}")]
+        // DELETE: api/product/5
+        [HttpDelete("{id}")] // add token
         public async Task<IActionResult> DeleteProductEntity([FromRoute] long id)
         {
             if (!ModelState.IsValid)
@@ -108,21 +103,20 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productEntity = await _context.ProductEntity.SingleOrDefaultAsync(m => m.Id == id);
+            var productEntity = await _productRepository.GetItemById(id);
             if (productEntity == null)
             {
                 return NotFound();
             }
 
-            _context.ProductEntity.Remove(productEntity);
-            await _context.SaveChangesAsync();
+            _productRepository.Remove(productEntity);
 
             return Ok(productEntity);
         }
 
         private bool ProductEntityExists(long id)
         {
-            return _context.ProductEntity.Any(e => e.Id == id);
+            return _productRepository.GetItemList().Any(e => e.Id == id);
         }
     }
 }

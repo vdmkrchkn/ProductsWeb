@@ -25,8 +25,6 @@ namespace ProductsWebApi.Models
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<ProductsWebApi.Models.Entities.ProductEntity> ProductEntity { get; set; }
-
         #endregion DbContext
     }
 }
