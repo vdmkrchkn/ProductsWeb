@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
@@ -46,7 +47,8 @@ namespace ProductsWebApi.Controllers
         }
 
         // PUT: api/product/5
-        [HttpPut("{id}")] // add token
+        [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> PutProductEntity([FromRoute] long id, [FromBody] ProductEntity productEntity)
         {
             if (!ModelState.IsValid)
@@ -81,7 +83,8 @@ namespace ProductsWebApi.Controllers
         }
 
         // POST: api/product
-        [HttpPost]  // add token
+        [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> PostProductEntity([FromBody] ProductEntity productEntity)
         {
             if (!ModelState.IsValid)
@@ -95,7 +98,8 @@ namespace ProductsWebApi.Controllers
         }
 
         // DELETE: api/product/5
-        [HttpDelete("{id}")] // add token
+        [Authorize(Roles = "admin")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductEntity([FromRoute] long id)
         {
             if (!ModelState.IsValid)
@@ -109,7 +113,7 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
-            _productRepository.Remove(productEntity);
+            await _productRepository.Remove(productEntity);
 
             return Ok(productEntity);
         }

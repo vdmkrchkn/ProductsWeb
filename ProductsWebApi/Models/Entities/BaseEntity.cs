@@ -5,6 +5,6 @@ namespace ProductsWebApi.Models.Entities
     public class BaseEntity
     {
         [Key]
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
 }
