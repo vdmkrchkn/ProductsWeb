@@ -22,9 +22,26 @@ namespace ProductsWebApi.Controllers
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductEntity> GetProductEntity()
+        public IEnumerable<ProductEntity> GetProductEntity(string name, double? priceMin, double? priceMax)
         {
-            return _productRepository.GetItemList();
+            var products = _productRepository.GetItemList();
+
+            if (name != null)
+            {
+                products = products.Where(product => product.Name.StartsWith(name));
+            }
+
+            if (priceMin.HasValue)
+            {
+                products = products.Where(product => product.Price >= priceMin.Value);
+            }
+
+            if (priceMax.HasValue)
+            {
+                products = products.Where(product => product.Price <= priceMax.Value);
+            }
+
+            return products;
         }
 
         // GET: api/product/5
