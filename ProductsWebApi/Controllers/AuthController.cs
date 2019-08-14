@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,12 @@ namespace ProductsWebApi.Controllers
     public class AuthController : Controller
     {
         private readonly IList<User> _users;
+        private readonly AuthOptions _token;
 
         public AuthController(IOptions<ApplicationSettings> appSettings)
         {            
             _users = appSettings.Value.Users;
+            _token = appSettings.Value.AuthToken;
         }
 
         [HttpPost]
@@ -46,13 +49,12 @@ namespace ProductsWebApi.Controllers
             var now = DateTime.UtcNow;
 
             var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
+                    issuer: _token.Issuer,
                     notBefore: now,
                     claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                    expires: now.Add(TimeSpan.FromMinutes(_token.Lifetime)),
                     signingCredentials: new SigningCredentials(
-                        AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                        new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_token.Key)), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
             var response = new

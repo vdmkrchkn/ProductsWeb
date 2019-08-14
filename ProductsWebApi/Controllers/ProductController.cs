@@ -22,7 +22,7 @@ namespace ProductsWebApi.Controllers
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductEntity> GetProductEntity(string name, double? priceMin, double? priceMax)
+        public IEnumerable<ProductBaseEntity> GetProductEntity(string name, double? priceMin, double? priceMax)
         {
             var products = _productRepository.GetItemList();
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
+using System.Text;
 
 namespace ProductsWebApi
 {
@@ -23,23 +24,26 @@ namespace ProductsWebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
+            var appSettingsSection = Configuration.GetSection("ApplicationSettings");
+            services.Configure<ApplicationSettings>(appSettingsSection);
+
+            var appSettings = appSettingsSection.Get<ApplicationSettings>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
                     options.RequireHttpsMetadata = false;
-                    // TODO: get from appsettings.json
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = AuthOptions.ISSUER,
+                        ValidIssuer = appSettings.AuthToken.Issuer,
 
-                        ValidateAudience = true,
-                        ValidAudience = AuthOptions.AUDIENCE,
+                        ValidateAudience = false,
                         ValidateLifetime = true,
 
-                        IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.ASCII.GetBytes(appSettings.AuthToken.Key)),
                         ValidateIssuerSigningKey = true,
                     };
                 });
@@ -59,6 +63,8 @@ namespace ProductsWebApi
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseAuthentication();
 
             app.UseMvc();
         }

@@ -1,15 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProductsWebApi.Models.Entities
 {
     [Table("Products")]
-    public class ProductEntity : BaseEntity
+    public class ProductEntity : ProductBaseEntity
     {
-        [Required]
-        public string Name { get; set; }
+        public string Description { get; set; }
 
-        [Required]
-        public double Price { get; set; }
+        public string PictureName { get; set; }
     }
 }
