@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -52,7 +53,7 @@ namespace ProductsWebApi
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-
+            services.AddAutoMapper(typeof(Startup));
             services.AddMvc();
         }
 
@@ -67,6 +68,12 @@ namespace ProductsWebApi
             app.UseAuthentication();
 
             app.UseMvc();
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<EFDbContext>();
+                context.Database.Migrate();
+            }
         }
     }
 }

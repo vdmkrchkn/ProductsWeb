@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,34 +17,45 @@ namespace ProductsWebApi.Controllers
     public class ProductController : Controller
     {
         private readonly IRepository<ProductEntity> _productRepository;
+        private readonly IMapper _mapper;
 
-        public ProductController(IRepository<ProductEntity> productRepository)
+        public ProductController(IRepository<ProductEntity> productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
+            _mapper = mapper;
+
         }
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductBaseEntity> GetProductEntity(string name, double? priceMin, double? priceMax)
+        public IEnumerable<ProductBase> GetProductEntity(string name, double? priceMin, double? priceMax)
         {
-            var products = _productRepository.GetItemList();
+            var productEntities = _productRepository.GetItemList();
 
             if (name != null)
             {
-                products = products.Where(product => product.Name.StartsWith(name));
+                productEntities = productEntities.Where(product => product.Name.StartsWith(name));
             }
 
             if (priceMin.HasValue)
             {
-                products = products.Where(product => product.Price >= priceMin.Value);
+                productEntities = productEntities.Where(product => product.Price >= priceMin.Value);
             }
 
             if (priceMax.HasValue)
             {
-                products = products.Where(product => product.Price <= priceMax.Value);
+                productEntities = productEntities.Where(product => product.Price <= priceMax.Value);
             }
 
-            return products;
+            try
+            {
+                return _mapper.Map<IEnumerable<Product>>(productEntities);
+            }
+            catch (System.Exception e)
+            {
+                Debug.WriteLine(e);
+                return null;
+            }
         }
 
         // GET: api/product/5
@@ -61,42 +74,32 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
+            var product = _mapper.Map<Product>(productEntity);
 
-            byte[] image = null;
             try
             {
-                image = System.IO.File.ReadAllBytes(productEntity.PictureName);
+                var filePath = System.IO.Path.Combine("Images", productEntity.PictureName);
+                product.Image = System.IO.File.ReadAllBytes(filePath);
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
-
+                Debug.WriteLine(e);
             }
             
-            var product = new Product
-            {
-                Name = productEntity.Name,
-                Price = productEntity.Price,
-                Description = productEntity.Description,
-                Image = image
-            }; 
-
             return Ok(product);
         }
 
         // PUT: api/product/5
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PutProductEntity([FromRoute] long id, [FromBody] ProductEntity productEntity)
+        public async Task<IActionResult> PutProductEntity([FromRoute] long id, [FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != productEntity.Id)
-            {
-                return BadRequest();
-            }
+            var productEntity = _mapper.Map<ProductEntity>(product);
 
             _productRepository.Update(productEntity);
 
@@ -122,16 +125,18 @@ namespace ProductsWebApi.Controllers
         // POST: api/product
         [HttpPost]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PostProductEntity([FromBody] ProductEntity productEntity)
+        public async Task<IActionResult> PostProductEntity([FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            var productEntity = _mapper.Map<ProductEntity>(product);
+
             await _productRepository.Create(productEntity);
 
-            return CreatedAtAction("GetProductEntity", new { id = productEntity.Id }, productEntity);
+            return CreatedAtAction("PostProductEntity", new { id = productEntity.Id }, product);
         }
 
         // DELETE: api/product/5

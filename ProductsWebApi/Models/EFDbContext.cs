@@ -7,10 +7,7 @@ namespace ProductsWebApi.Models
     {
         #region Ctor
 
-        public EFDbContext(DbContextOptions<EFDbContext> options) : base(options)
-        {
-            Database.EnsureCreated();
-        }
+        public EFDbContext(DbContextOptions<EFDbContext> options) : base(options){ }
 
         #endregion Ctor
 
