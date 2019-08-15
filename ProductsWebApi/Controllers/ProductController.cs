@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Entities;
+using ProductsWebApi.Models.Views;
 
 namespace ProductsWebApi.Controllers
 {
@@ -60,7 +61,26 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
-            return Ok(productEntity);
+
+            byte[] image = null;
+            try
+            {
+                image = System.IO.File.ReadAllBytes(productEntity.PictureName);
+            }
+            catch (System.Exception)
+            {
+
+            }
+            
+            var product = new Product
+            {
+                Name = productEntity.Name,
+                Price = productEntity.Price,
+                Description = productEntity.Description,
+                Image = image
+            }; 
+
+            return Ok(product);
         }
 
         // PUT: api/product/5
