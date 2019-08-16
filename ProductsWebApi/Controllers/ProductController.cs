@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -47,15 +48,13 @@ namespace ProductsWebApi.Controllers
                 productEntities = productEntities.Where(product => product.Price <= priceMax.Value);
             }
 
-            try
+            List<ProductBase> products = new List<ProductBase>();
+            foreach (var product in productEntities)
             {
-                return _mapper.Map<IEnumerable<Product>>(productEntities);
+                products.Add(new ProductBase { Name = product.Name, Price = product.Price });
             }
-            catch (System.Exception e)
-            {
-                Debug.WriteLine(e);
-                return null;
-            }
+
+            return products;
         }
 
         // GET: api/product/5
@@ -74,19 +73,24 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
-            var product = _mapper.Map<Product>(productEntity);
-
             try
             {
-                var filePath = System.IO.Path.Combine("Images", productEntity.PictureName);
-                product.Image = System.IO.File.ReadAllBytes(filePath);
+                var product = _mapper.Map<Product>(productEntity);
+
+                if (productEntity.PictureName != null)
+                {
+                    var filePath = Path.Combine("Images", productEntity.PictureName);
+                    product.Image = System.IO.File.ReadAllBytes(filePath);
+                }
+
+                return Ok(product);
             }
             catch (System.Exception e)
             {
                 Debug.WriteLine(e);
+
+                return BadRequest();
             }
-            
-            return Ok(product);
         }
 
         // PUT: api/product/5
@@ -99,12 +103,14 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productEntity = _mapper.Map<ProductEntity>(product);
-
-            _productRepository.Update(productEntity);
-
             try
             {
+                var productEntity = _mapper.Map<ProductEntity>(product);
+                productEntity.Id = id;
+                productEntity.PictureName = SaveImage(product);
+
+                _productRepository.Update(productEntity);
+
                 await _productRepository.Save();
             }
             catch (DbUpdateConcurrencyException)
@@ -133,6 +139,7 @@ namespace ProductsWebApi.Controllers
             }
 
             var productEntity = _mapper.Map<ProductEntity>(product);
+            productEntity.PictureName = SaveImage(product);
 
             await _productRepository.Create(productEntity);
 
@@ -155,6 +162,15 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
+            try
+            {
+                System.IO.File.Delete(productEntity.PictureName);
+            }
+            catch(System.Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            
             await _productRepository.Remove(productEntity);
 
             return Ok(productEntity);
@@ -163,6 +179,21 @@ namespace ProductsWebApi.Controllers
         private bool ProductEntityExists(long id)
         {
             return _productRepository.GetItemList().Any(e => e.Id == id);
+        }
+
+        private string SaveImage(Product product)
+        {
+            string fileName = null;
+
+            if (product.Image != null && product.Image.Length > 0)
+            {
+                fileName = Path.GetRandomFileName(); //$"{id}_{product.Name}.webp";
+                
+                // преобразование набора байтов в изображение
+                System.IO.File.WriteAllBytes(fileName, product.Image);
+            }
+
+            return fileName;
         }
     }
 }

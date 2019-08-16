@@ -9,7 +9,8 @@ namespace ProductsWebApi.Models
         public ProductProfile()
         {
             CreateMap<Product, ProductEntity>(MemberList.None);
-            CreateMap<ProductEntity, Product>(MemberList.None);
+            CreateMap<ProductEntity, Product>(MemberList.None)
+                .ForMember(x => x.Image, opt => opt.Ignore());
         }
     }
 }
