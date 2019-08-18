@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ProductsWebAdmin.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ProductsWebAdmin.Controllers
@@ -53,13 +57,34 @@ namespace ProductsWebAdmin.Controllers
                 // access_token в sessionStorage
                 Debug.WriteLine(data);
 
-                return Ok();
+                // создаем один claim
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username)
+                };
+
+                // создаем объект ClaimsIdentity
+                var id = new ClaimsIdentity(claims, "ApplicationCookie",
+                    ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+
+                // установка аутентификационных куки
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+
+                return RedirectToRoute("default");
             }
             else
             {
-                return Index();
+                ModelState.AddModelError("", "Invalid username or password");
             }
-            
+
+            return View(user);
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login");
         }
     }
 }
