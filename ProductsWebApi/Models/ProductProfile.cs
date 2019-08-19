@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Views;
+using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Models
 {

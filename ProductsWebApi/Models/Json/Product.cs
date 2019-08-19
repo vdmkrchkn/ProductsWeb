@@ -1,4 +1,4 @@
-﻿namespace ProductsWebApi.Models.Views
+﻿namespace ProductsWebApi.Models.Json
 {
     public class Product : ProductBase
     {

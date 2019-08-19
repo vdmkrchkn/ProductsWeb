@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Views;
+using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Controllers
 {

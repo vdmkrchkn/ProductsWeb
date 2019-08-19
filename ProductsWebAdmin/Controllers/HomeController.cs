@@ -9,14 +9,13 @@ namespace ProductsWebAdmin.Controllers
     {
         public IActionResult Index()
         {
-            //Debug.WriteLine($"User.Identity = {User.Identity}");
-            if (HttpContext.Request.Cookies.ContainsKey("token"))
+            if (Request.Cookies.ContainsKey("token"))
             {
                 return View();
             }
             else
             {
-                return RedirectToAction("Index", "Login");
+                return RedirectToAction("Index", "Auth");
             }
         }
 

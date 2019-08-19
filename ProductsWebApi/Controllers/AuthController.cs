@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
+using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Controllers
 {
@@ -19,7 +20,7 @@ namespace ProductsWebApi.Controllers
     [Route("api/auth")]
     public class AuthController : Controller
     {
-        private readonly IList<User> _users;
+        private readonly IList<Models.Extensions.User> _users;
         private readonly AuthOptions _token;
 
         public AuthController(IOptions<ApplicationSettings> appSettings)
@@ -29,7 +30,7 @@ namespace ProductsWebApi.Controllers
         }
 
         [HttpPost]
-        public async Task Verify([FromBody] Models.Views.User user)
+        public async Task Verify([FromBody] Models.Json.User user)
         {
             if (user == null)
             {
@@ -57,10 +58,10 @@ namespace ProductsWebApi.Controllers
                         new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_token.Key)), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            var response = new
+            var response = new AuthToken
             {
-                access_token = encodedJwt,
-                username = identity.Name
+                Username = identity.Name,
+                Token = encodedJwt,
             };
 
             // answer serialization
@@ -70,7 +71,7 @@ namespace ProductsWebApi.Controllers
                     response, new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
 
-        private ClaimsIdentity GetIdentity(Models.Views.User verifiedUser)
+        private ClaimsIdentity GetIdentity(Models.Json.User verifiedUser)
         {
             var person = _users.FirstOrDefault(user => 
                 user.Login == verifiedUser.Username && user.Password == verifiedUser.Password);
