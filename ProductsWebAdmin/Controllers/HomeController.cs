@@ -7,10 +7,17 @@ namespace ProductsWebAdmin.Controllers
 {
     public class HomeController : Controller
     {
-        [Authorize]
         public IActionResult Index()
         {
-            return View(User.Identity.Name);
+            //Debug.WriteLine($"User.Identity = {User.Identity}");
+            if (HttpContext.Request.Cookies.ContainsKey("token"))
+            {
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("Index", "Login");
+            }
         }
 
         [Authorize]

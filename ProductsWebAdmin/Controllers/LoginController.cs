@@ -52,24 +52,25 @@ namespace ProductsWebAdmin.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                var data = response.Content.ReadAsStringAsync();
+                var data = await response.Content.ReadAsStringAsync();
 
-                // access_token в sessionStorage
                 Debug.WriteLine(data);
 
+                HttpContext.Response.Cookies.Append("token", data);
+
                 // создаем один claim
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username)
-                };
+                //var claims = new List<Claim>
+                //{
+                //    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username)
+                //};
 
-                // создаем объект ClaimsIdentity
-                var id = new ClaimsIdentity(claims, "ApplicationCookie",
-                    ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+                //// создаем объект ClaimsIdentity
+                //var id = new ClaimsIdentity(claims, "ApplicationCookie",
+                //    ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
 
-                // установка аутентификационных куки
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+                //// установка аутентификационных куки
+                //await HttpContext.SignInAsync(
+                //    CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
 
                 return RedirectToRoute("default");
             }
