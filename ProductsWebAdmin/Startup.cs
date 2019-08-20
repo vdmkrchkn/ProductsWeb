@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using ProductsWebAdmin.Services;
-using System;
 
 namespace ProductsWebAdmin
 {
@@ -23,23 +19,7 @@ namespace ProductsWebAdmin
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IAuthService, AuthService>();
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-                {
-                    //options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Login");
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        //ValidateIssuer = true,
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.FromSeconds(5)
-                    };
-                }
-            );
+            services.AddTransient<IProductService, ProductService>();
 
             services.AddMvc();
         }
@@ -57,7 +37,6 @@ namespace ProductsWebAdmin
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseAuthentication();
             app.UseStaticFiles();
 
             app.UseMvc(routes =>

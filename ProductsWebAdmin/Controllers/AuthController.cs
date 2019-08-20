@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProductsWebAdmin.Models;
 using ProductsWebAdmin.Services;
 using System.Threading.Tasks;
@@ -24,8 +21,9 @@ namespace ProductsWebAdmin.Controllers
             return View();
         }
 
-        [HttpPost]        
-        public async Task<IActionResult> Index(User user)
+        [HttpPost]     
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login([FromForm]User user)
         {
             if (!ModelState.IsValid)
             {
@@ -45,12 +43,11 @@ namespace ProductsWebAdmin.Controllers
                 ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
             }
 
-            return View(user);
+            return RedirectToAction("Index");
         }
 
         public IActionResult Logout()
         {
-            //await HttpContext.SignOutAsync(JwtBearerDefaults.AuthenticationScheme);
             Response.Cookies.Delete(COOKIE_TOKEN_KEY);
 
             return RedirectToAction("Index");

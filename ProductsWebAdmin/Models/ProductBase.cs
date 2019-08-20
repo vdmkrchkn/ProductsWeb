@@ -1,4 +1,4 @@
-﻿namespace ProductsWebApi.Models.Json
+﻿namespace ProductsWebAdmin.Models
 {
     public class ProductBase
     {

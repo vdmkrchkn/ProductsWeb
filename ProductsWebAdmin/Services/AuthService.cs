@@ -22,7 +22,7 @@ namespace ProductsWebAdmin.Services
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
-
+        
         public async Task<string> GetToken(User user)
         {
             var userContent = JsonConvert.SerializeObject(user);

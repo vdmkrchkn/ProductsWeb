@@ -1,26 +1,72 @@
 ﻿@{
     Layout = null;
 }
+@model ProductsWebAdmin.Models.User
 
 <!DOCTYPE html>
 
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>Login</title>
+    <title>Login - ProductsWebAdmin</title>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+    </environment>
 </head>
 <body>
-    <form method="post">
-        <h3>Please enter your credentials</h3>
-        <label>
-            Login:
-            <input type="text" name="username" />
-        </label>
-        <label>
-            Password:
-            <input type="password" name="password" />
-        </label>
-        <button type="submit">Log in</button>
-    </form>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4 panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Please enter your credentials</h3>
+            </div>
+            <div class="panel-body">
+                <form asp-action="Login" asp-controller="Auth" asp-anti-forgery="true">
+                    <div class="validation" asp-validation-summary="ModelOnly" />
+                    <h3></h3>
+                    <div class="form-group">
+                        <label>
+                            Login:
+                            <input type="text" class="form-control" name="Username" placeholder="Enter your login" />
+                        </label>
+                        <span asp-validation-for="Username" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Password:
+                            <input type="password" class="form-control" name="Password" placeholder="Enter your password" />
+                        </label>
+                        <span asp-validation-for="Password" />
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Log in</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+    </environment>
 </body>
 </html>

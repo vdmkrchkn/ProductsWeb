@@ -51,7 +51,7 @@ namespace ProductsWebApi.Controllers
             List<ProductBase> products = new List<ProductBase>();
             foreach (var product in productEntities)
             {
-                products.Add(new ProductBase { Name = product.Name, Price = product.Price });
+                products.Add(new ProductBase { Id = product.Id, Name = product.Name, Price = product.Price });
             }
 
             return products;

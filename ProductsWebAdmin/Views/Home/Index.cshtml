@@ -1,3 +1,27 @@
 ﻿@{
     ViewData["Title"] = "Каталог товаров";
 }
+@model IEnumerable<ProductBase>
+
+<div class="row">
+    <a href="~/Home/Edit" class="btn btn-default btn-lg">Add new product</a>
+</div>
+<div class="row">
+    <table class="table table-condensed">
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th></th>
+        </tr>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>@product.Price</td>
+                <td><a href="~/Home/Edit/@product.Id">Edit</a></td>
+            </tr>
+        }
+    </table>
+</div>
