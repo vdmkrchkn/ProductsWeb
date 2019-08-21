@@ -2,6 +2,7 @@
 using ProductsWebAdmin.Filters;
 using ProductsWebAdmin.Models;
 using ProductsWebAdmin.Services;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
@@ -57,13 +58,48 @@ namespace ProductsWebAdmin.Controllers
 
             HttpStatusCode statusCode = await _productService.Edit(product, token);
 
-            if (statusCode == HttpStatusCode.Unauthorized)
+            switch(statusCode)
             {
-                ModelState.AddModelError("editProduct", "Unauthorized");
+                case HttpStatusCode.Unauthorized:
+                {
+                    ModelState.AddModelError("editProduct", "Unauthorized");
+                    return RedirectToAction("Index", "Auth");
+                }
+                case HttpStatusCode.NoContent:
+                    return RedirectToAction("Index");
+                default:
+                    return View();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add([FromForm]Product product)
+        {
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest();
+            //}
+
+            if (!HttpContext.Request.Cookies.TryGetValue("token", out string token))
+            {
+                ModelState.AddModelError("editProduct", "invalid auth token");
                 return RedirectToAction("Index", "Auth");
             }
 
-            return RedirectToAction("Index");
+            HttpStatusCode statusCode = await _productService.Add(product, token);
+
+            switch (statusCode)
+            {
+                case HttpStatusCode.Unauthorized:
+                    {
+                        ModelState.AddModelError("addProduct", "Unauthorized");
+                        return RedirectToAction("Index", "Auth");
+                    }
+                case HttpStatusCode.Created:
+                    return RedirectToAction("Index");
+                default:
+                    return RedirectToAction("Edit");
+            }
         }
 
         [AuthFilter]

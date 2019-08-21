@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -54,6 +53,20 @@ namespace ProductsWebAdmin.Services
             }
 
             return null;
+        }
+
+        public async Task<HttpStatusCode> Add(Product product, string token)
+        {
+            var productContent = JsonConvert.SerializeObject(product);
+            var byteContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productContent));
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            _client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await _client.PostAsync($"api/product", byteContent);
+
+            return response.StatusCode;
         }
 
         public async Task<HttpStatusCode> Edit(Product product, string token)

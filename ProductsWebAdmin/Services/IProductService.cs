@@ -12,5 +12,7 @@ namespace ProductsWebAdmin.Services
         Task<Product> GetProduct(long id);
 
         Task<HttpStatusCode> Edit(Product product, string token);
+
+        Task<HttpStatusCode> Add(Product product, string token);
     }
 }
