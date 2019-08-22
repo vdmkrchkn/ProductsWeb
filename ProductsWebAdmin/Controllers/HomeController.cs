@@ -2,7 +2,6 @@
 using ProductsWebAdmin.Filters;
 using ProductsWebAdmin.Models;
 using ProductsWebAdmin.Services;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
@@ -43,7 +42,7 @@ namespace ProductsWebAdmin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit([FromForm]Product product)
+        public async Task<IActionResult> Edit([FromRoute] long id, [FromForm]Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -55,6 +54,8 @@ namespace ProductsWebAdmin.Controllers
                 ModelState.AddModelError("editProduct", "invalid auth token");
                 return RedirectToAction("Index", "Auth");
             }
+
+            product.Id = id;
 
             HttpStatusCode statusCode = await _productService.Edit(product, token);
 
@@ -68,17 +69,17 @@ namespace ProductsWebAdmin.Controllers
                 case HttpStatusCode.NoContent:
                     return RedirectToAction("Index");
                 default:
-                    return View();
+                    return View(product);
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> Add([FromForm]Product product)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest();
-            //}
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Edit");
+            }
 
             if (!HttpContext.Request.Cookies.TryGetValue("token", out string token))
             {

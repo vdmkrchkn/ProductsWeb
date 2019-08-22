@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
@@ -17,11 +19,13 @@ namespace ProductsWebApi.Controllers
     [Route("api/product")]
     public class ProductController : Controller
     {
+        private readonly IHostingEnvironment _env;
         private readonly IRepository<ProductEntity> _productRepository;
         private readonly IMapper _mapper;
 
-        public ProductController(IRepository<ProductEntity> productRepository, IMapper mapper)
+        public ProductController(IHostingEnvironment env, IRepository<ProductEntity> productRepository, IMapper mapper)
         {
+            _env = env;
             _productRepository = productRepository;
             _mapper = mapper;
 
@@ -75,15 +79,13 @@ namespace ProductsWebApi.Controllers
 
             try
             {
-                var product = _mapper.Map<Product>(productEntity);
-
                 if (productEntity.PictureName != null)
                 {
-                    var filePath = Path.Combine("Images", productEntity.PictureName);
-                    product.Image = System.IO.File.ReadAllBytes(filePath);
+                    productEntity.PictureName =
+                        Path.Combine(_env.ContentRootPath, "Images", productEntity.PictureName);
                 }
-
-                return Ok(product);
+                
+                return Ok(productEntity);
             }
             catch (System.Exception e)
             {
@@ -107,7 +109,7 @@ namespace ProductsWebApi.Controllers
             {
                 var productEntity = _mapper.Map<ProductEntity>(product);
                 productEntity.Id = id;
-                productEntity.PictureName = SaveImage(product);
+                productEntity.PictureName = await SaveImage(product);
 
                 _productRepository.Update(productEntity);
 
@@ -139,7 +141,7 @@ namespace ProductsWebApi.Controllers
             }
 
             var productEntity = _mapper.Map<ProductEntity>(product);
-            productEntity.PictureName = SaveImage(product);
+            productEntity.PictureName = await SaveImage(product);
 
             await _productRepository.Create(productEntity);
 
@@ -162,13 +164,17 @@ namespace ProductsWebApi.Controllers
                 return NotFound();
             }
 
-            try
+            if (productEntity.PictureName != null)
             {
-                System.IO.File.Delete(productEntity.PictureName);
-            }
-            catch(System.Exception e)
-            {
-                Debug.WriteLine(e);
+                try
+                {
+                    string filePath = Path.Combine(_env.ContentRootPath, "Images", productEntity.PictureName);
+                    System.IO.File.Delete(filePath);
+                }
+                catch(System.Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
             }
             
             await _productRepository.Remove(productEntity);
@@ -181,16 +187,19 @@ namespace ProductsWebApi.Controllers
             return _productRepository.GetItemList().Any(e => e.Id == id);
         }
 
-        private string SaveImage(Product product)
+        private async Task<string> SaveImage(Product product)
         {
-            string fileName = null;
+            string fileName = product.PictureName;
 
             if (product.Image != null && product.Image.Length > 0)
             {
-                fileName = Path.GetRandomFileName(); //$"{id}_{product.Name}.webp";
-                
-                // преобразование набора байтов в изображение
-                System.IO.File.WriteAllBytes(fileName, product.Image);
+                fileName = product.Image.FileName;
+                string filePath = Path.Combine(_env.ContentRootPath, "Images", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await product.Image.CopyToAsync(stream);
+                }
             }
 
             return fileName;

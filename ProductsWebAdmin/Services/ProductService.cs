@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -70,15 +71,39 @@ namespace ProductsWebAdmin.Services
         }
 
         public async Task<HttpStatusCode> Edit(Product product, string token)
-        {
-            var productContent = JsonConvert.SerializeObject(product);
-            var byteContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productContent));
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        {            
+            HttpContent productContent;
+
+            if (product.Image != null)
+            {
+                byte[] imageData;
+                using (var br = new BinaryReader(product.Image.OpenReadStream()))
+                {
+                    imageData = br.ReadBytes((int)product.Image.OpenReadStream().Length);
+                }
+              
+                var imageBytes = new ByteArrayContent(imageData);
+
+                productContent = new MultipartFormDataContent
+                {
+                    { imageBytes, "Image", product.Image.FileName },
+                    { new StringContent(product.Id.ToString()), "Id" },
+                    { new StringContent(product.Name), "Name" },
+                    { new StringContent(product.Price.ToString()), "Price" },
+                    { new StringContent(product.Description), "Description" }
+                };
+            }
+            else
+            {
+                var productJson = JsonConvert.SerializeObject(product);
+                productContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productJson));
+                productContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
 
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            HttpResponseMessage response = await _client.PutAsync($"api/product/{product.Id}", byteContent);
+            HttpResponseMessage response = await _client.PutAsync($"api/product/{product.Id}", productContent);
 
             return response.StatusCode;
         }

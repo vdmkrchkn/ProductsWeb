@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
+using System.Linq;
 using System.Text;
 
 namespace ProductsWebApi
@@ -54,7 +56,11 @@ namespace ProductsWebApi
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddAutoMapper(typeof(Startup));
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                var jsonInputFormatter = options.InputFormatters.OfType<JsonInputFormatter>().First();
+                jsonInputFormatter.SupportedMediaTypes.Add("multipart/form-data");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
