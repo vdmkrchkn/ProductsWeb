@@ -53,7 +53,7 @@ namespace ProductsWebApi
 
             var connection = Configuration.GetConnectionString("MsSqlConnection");
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
-
+            
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddAutoMapper(typeof(Startup));
             services.AddMvc(options =>

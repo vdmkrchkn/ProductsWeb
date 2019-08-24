@@ -1,25 +1,21 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using ProductsWebAdmin.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using ProductsWebAdmin.Models;
 
 namespace ProductsWebAdmin.Services
 {
     public class ProductService : IProductService
     {
-        private readonly HttpClient _client; // TODO: use as singleton
+        private readonly HttpClient _client;
 
-        public ProductService()
+        public ProductService(HttpClientProvider httpClient)
         {
-            _client = new HttpClient
-            {
-                BaseAddress = new Uri("http://localhost:31549/"), // TODO: use config
-            };
+            _client = httpClient.Client;
         }
 
         public async Task<IEnumerable<ProductBase>> GetProducts(string name, double? priceMin, double? priceMax)
@@ -65,7 +61,7 @@ namespace ProductsWebAdmin.Services
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            HttpResponseMessage response = await _client.PostAsync($"api/product", byteContent);
+            HttpResponseMessage response = await _client.PostAsync("api/product", byteContent);
 
             return response.StatusCode;
         }
@@ -104,6 +100,16 @@ namespace ProductsWebAdmin.Services
                 new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await _client.PutAsync($"api/product/{product.Id}", productContent);
+
+            return response.StatusCode;
+        }
+
+        public async Task<HttpStatusCode> Delete(long id, string token)
+        {
+            _client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await _client.DeleteAsync($"api/product/{id}");
 
             return response.StatusCode;
         }

@@ -103,6 +103,28 @@ namespace ProductsWebAdmin.Controllers
             }
         }
 
+        public async Task<IActionResult> Delete([FromRoute] long id)
+        {
+            if (!HttpContext.Request.Cookies.TryGetValue("token", out string token))
+            {
+                ModelState.AddModelError("editProduct", "invalid auth token");
+                return RedirectToAction("Index", "Auth");
+            }
+
+            HttpStatusCode statusCode = await _productService.Delete(id, token);
+
+            switch (statusCode)
+            {
+                case HttpStatusCode.Unauthorized:
+                    {
+                        ModelState.AddModelError("deleteProduct", "Unauthorized");
+                        return RedirectToAction("Index", "Auth");
+                    }
+                default:
+                    return RedirectToAction("Index");
+            }
+        }
+
         [AuthFilter]
         public IActionResult About()
         {

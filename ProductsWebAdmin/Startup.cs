@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ProductsWebAdmin.Models.Extensions;
 using ProductsWebAdmin.Services;
 
 namespace ProductsWebAdmin
@@ -18,8 +19,13 @@ namespace ProductsWebAdmin
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
+            var appSettingsSection = Configuration.GetSection("ApplicationSettings");
+            services.Configure<ApplicationSettings>(appSettingsSection);
+
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IProductService, ProductService>();
+            services.AddSingleton<HttpClientProvider>();
 
             services.AddMvc();
         }

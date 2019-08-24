@@ -14,5 +14,7 @@ namespace ProductsWebAdmin.Services
         Task<HttpStatusCode> Edit(Product product, string token);
 
         Task<HttpStatusCode> Add(Product product, string token);
+
+        Task<HttpStatusCode> Delete(long id, string token);
     }
 }
