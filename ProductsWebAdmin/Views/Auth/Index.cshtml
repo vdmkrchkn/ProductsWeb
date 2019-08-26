@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-@model ProductsWebAdmin.Models.User
+@model User
 
 <!DOCTYPE html>
 
@@ -26,21 +26,20 @@
             </div>
             <div class="panel-body">
                 <form asp-action="Login" asp-controller="Auth" asp-anti-forgery="true">
-                    <div class="validation" asp-validation-summary="ModelOnly" />
-                    <h3></h3>
+                    <div asp-validation-summary="ModelOnly" class="validation" />
                     <div class="form-group">
                         <label>
                             Login:
-                            <input type="text" class="form-control" name="Username" placeholder="Enter your login" />
+                            <input type="text" class="form-control" asp-for="Username" placeholder="Enter your login" />
                         </label>
-                        <span asp-validation-for="Username" />
+                        <span asp-validation-for="Username" class="text-danger" />
                     </div>
                     <div class="form-group">
                         <label>
                             Password:
-                            <input type="password" class="form-control" name="Password" placeholder="Enter your password" />
+                            <input type="password" class="form-control" asp-for="Password" placeholder="Enter your password" />
                         </label>
-                        <span asp-validation-for="Password" />
+                        <span asp-validation-for="Password" class="text-danger" />
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">Log in</button>
@@ -53,6 +52,8 @@
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
@@ -66,6 +67,18 @@
                 asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
                 crossorigin="anonymous"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"
+                asp-fallback-src="~/lib/jquery-validation/dist/jquery.validate.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.validator"
+                crossorigin="anonymous"
+                integrity="sha384-Fnqn3nxp3506LP/7Y3j/25BlWeA3PXTyT1l78LjECcPaKCV12TsZP7yyMxOe/G/k">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validation.unobtrusive/3.2.6/jquery.validate.unobtrusive.min.js"
+                asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive"
+                crossorigin="anonymous"
+                integrity="sha384-JrXK+k53HACyavUKOsL+NkmSesD2P+73eDMrbTtTk0h4RmOF8hF8apPlkp26JlyH">
         </script>
     </environment>
 </body>

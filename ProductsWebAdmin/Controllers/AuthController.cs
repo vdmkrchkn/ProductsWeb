@@ -40,7 +40,7 @@ namespace ProductsWebAdmin.Controllers
             }
             else
             {
-                ModelState.AddModelError("InvalidCredentials", "Invalid username or password");
+                ModelState.AddModelError("", "Unauthorized");
             }
 
             return RedirectToAction("Index");
