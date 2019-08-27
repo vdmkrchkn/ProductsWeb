@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProductsWebApi.Models;
@@ -8,6 +9,7 @@ using ProductsWebApi.Models.Entities;
 using ProductsWebApi.Models.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -108,11 +110,56 @@ namespace ProductsWebApi.Controllers
             {
                 var productEntity = _mapper.Map<ProductEntity>(product);
                 productEntity.Id = id;
-                productEntity.PictureName = await SaveImage(product);
 
                 _productRepository.Update(productEntity);
 
                 await _productRepository.Save();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ProductEntityExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // PUT: api/product/image/5
+        [HttpPut("image/{id}")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> PutProductEntityWithImage([FromRoute] long id,
+            IFormFile image, string name, string price, string description)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var productEntity = new ProductEntity
+                {
+                    Id = id,
+                    Name = name,
+                    Price = double.Parse(price, CultureInfo.InvariantCulture),
+                    Description = description
+                };
+
+                productEntity.PictureName = await SaveImage(image);
+
+                _productRepository.Update(productEntity);
+
+                await _productRepository.Save();
+            }
+            catch(System.FormatException fe)
+            {
+                return BadRequest(fe);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -140,11 +187,36 @@ namespace ProductsWebApi.Controllers
             }
 
             var productEntity = _mapper.Map<ProductEntity>(product);
-            productEntity.PictureName = await SaveImage(product);
+            //productEntity.PictureName = await SaveImage(product);
 
             await _productRepository.Create(productEntity);
 
             return CreatedAtAction("PostProductEntity", new { id = productEntity.Id }, product);
+        }
+
+        // POST: api/product/image
+        [HttpPost("image")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> PostProductEntityWithImage(
+            IFormFile image, string name, string price, string description)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var productEntity = new ProductEntity
+            {
+                Name = name,
+                Price = double.Parse(price, CultureInfo.InvariantCulture),
+                Description = description
+            };
+
+            productEntity.PictureName = await SaveImage(image);
+
+            await _productRepository.Create(productEntity);
+
+            return CreatedAtAction("PostProductEntity", new { id = productEntity.Id }, productEntity);
         }
 
         // DELETE: api/product/5
@@ -186,18 +258,17 @@ namespace ProductsWebApi.Controllers
             return _productRepository.GetItemList().Any(e => e.Id == id);
         }
 
-        private async Task<string> SaveImage(Product product)
+        private async Task<string> SaveImage(IFormFile image)
         {
-            string fileName = product.PictureName;
+            string fileName = image.FileName;
 
-            if (product.Image != null && product.Image.Length > 0)
+            if (image != null && image.Length > 0)
             {
-                fileName = product.Image.FileName;
                 string filePath = Path.Combine(_env.ContentRootPath, "Images", fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await product.Image.CopyToAsync(stream);
+                    await image.CopyToAsync(stream);
                 }
             }
 

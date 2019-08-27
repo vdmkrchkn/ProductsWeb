@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using ProductsWebAdmin.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -54,20 +55,25 @@ namespace ProductsWebAdmin.Services
 
         public async Task<HttpStatusCode> Add(Product product, string token)
         {
-            var productContent = JsonConvert.SerializeObject(product);
-            var byteContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productContent));
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            HttpResponseMessage response = await _client.PostAsync("api/product", byteContent);
+            var httpContent = GetProductHttpContent(product);
+
+            string uri = "api/product";
+
+            if (httpContent is MultipartFormDataContent)
+            {
+                uri += "/image";
+            }
+
+            HttpResponseMessage response = await _client.PostAsync(uri, httpContent);
 
             return response.StatusCode;
         }
 
-        public async Task<HttpStatusCode> Edit(Product product, string token)
-        {            
+        private HttpContent GetProductHttpContent(Product product)
+        {
             HttpContent productContent;
 
             if (product.Image != null)
@@ -83,23 +89,40 @@ namespace ProductsWebAdmin.Services
                 productContent = new MultipartFormDataContent
                 {
                     { imageBytes, "Image", product.Image.FileName },
-                    { new StringContent(product.Id.ToString()), "Id" },
                     { new StringContent(product.Name), "Name" },
                     { new StringContent(product.Price.ToString()), "Price" },
-                    { new StringContent(product.Description), "Description" }
-                };
+                    //{ new StringContent(product?.Description), "Description" }
+                };                
             }
             else
             {
                 var productJson = JsonConvert.SerializeObject(product);
                 productContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productJson));
-                productContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                productContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");                
             }
 
+            return productContent;
+        }
+
+        public async Task<HttpStatusCode> Edit(Product product, string token)
+        {            
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            HttpResponseMessage response = await _client.PutAsync($"api/product/{product.Id}", productContent);
+            var httpContent = GetProductHttpContent(product);
+
+            string uri;
+
+            if (httpContent is MultipartFormDataContent)
+            {
+                uri = $"api/product/image/{product.Id}";
+            }
+            else
+            {
+                uri = $"api/product/{product.Id}";
+            }
+
+            HttpResponseMessage response = await _client.PutAsync(uri, httpContent);
 
             return response.StatusCode;
         }

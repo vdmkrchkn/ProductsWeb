@@ -42,7 +42,7 @@ namespace ProductsWebAdmin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit([FromRoute] long id, [FromForm]Product product)
+        public async Task<IActionResult> Edit([FromRoute] long id, Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -51,7 +51,7 @@ namespace ProductsWebAdmin.Controllers
 
             if (!HttpContext.Request.Cookies.TryGetValue("token", out string token))
             {
-                ModelState.AddModelError("editProduct", "invalid auth token");
+                ModelState.AddModelError("", "invalid auth token");
                 return RedirectToAction("Index", "Auth");
             }
 
@@ -63,7 +63,7 @@ namespace ProductsWebAdmin.Controllers
             {
                 case HttpStatusCode.Unauthorized:
                 {
-                    ModelState.AddModelError("editProduct", "Unauthorized");
+                    ModelState.AddModelError("", "Unauthorized");
                     return RedirectToAction("Index", "Auth");
                 }
                 case HttpStatusCode.NoContent:
@@ -74,7 +74,7 @@ namespace ProductsWebAdmin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromForm]Product product)
+        public async Task<IActionResult> Add(Product product)
         {
             if (!ModelState.IsValid)
             {
