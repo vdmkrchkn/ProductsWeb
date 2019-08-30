@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
+using ProductsWebApi.Services;
 using System.Linq;
 using System.Text;
 
@@ -55,6 +56,8 @@ namespace ProductsWebApi
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
             
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddTransient<IProductService, ProductService>();
+            services.AddTransient<IAuthService, JwtAuthService>();
             services.AddAutoMapper(typeof(Startup));
             services.AddMvc(options =>
             {

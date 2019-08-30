@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ProductsWebApi.Models.Entities;
 using ProductsWebApi.Models.Json;
+using System.Globalization;
 
 namespace ProductsWebApi.Models
 {
@@ -8,9 +9,15 @@ namespace ProductsWebApi.Models
     {
         public ProductProfile()
         {
-            CreateMap<Product, ProductEntity>(MemberList.None);
+            var doubleFormat = CultureInfo.InvariantCulture;
+
+            CreateMap<Product, ProductEntity>(MemberList.None)
+                .ForMember(productEntity => productEntity.Price,
+                    opt => opt.MapFrom(product => double.Parse(product.Price, doubleFormat)));
             CreateMap<ProductEntity, Product>(MemberList.None)
-                .ForMember(x => x.Image, opt => opt.Ignore());
+                .ForMember(product => product.Image, opt => opt.Ignore())
+                .ForMember(product => product.Price,
+                    opt => opt.MapFrom(productEntity => productEntity.Price.ToString(doubleFormat)));
         }
     }
 }

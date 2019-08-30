@@ -1,17 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProductsWebApi.Models;
-using ProductsWebApi.Models.Entities;
 using ProductsWebApi.Models.Json;
+using ProductsWebApi.Services;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ProductsWebApi.Controllers
@@ -20,80 +12,37 @@ namespace ProductsWebApi.Controllers
     [Route("api/product")]
     public class ProductController : Controller
     {
-        private readonly IHostingEnvironment _env;
-        private readonly IRepository<ProductEntity> _productRepository;
-        private readonly IMapper _mapper;
+        private readonly IProductService _productService;
 
-        public ProductController(IHostingEnvironment env, IRepository<ProductEntity> productRepository, IMapper mapper)
+        public ProductController(IProductService productService)
         {
-            _env = env;
-            _productRepository = productRepository;
-            _mapper = mapper;
-
+            _productService = productService;
         }
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductBase> GetProductEntity(string name, double? priceMin, double? priceMax)
+        public IEnumerable<ProductBase> GetProducts(string name, double? priceMin, double? priceMax)
         {
-            var productEntities = _productRepository.GetItemList();
-
-            if (name != null)
-            {
-                productEntities = productEntities.Where(product => product.Name.StartsWith(name));
-            }
-
-            if (priceMin.HasValue)
-            {
-                productEntities = productEntities.Where(product => product.Price >= priceMin.Value);
-            }
-
-            if (priceMax.HasValue)
-            {
-                productEntities = productEntities.Where(product => product.Price <= priceMax.Value);
-            }
-
-            var products = new List<ProductBase>();
-            foreach (var product in productEntities)
-            {
-                products.Add(new ProductBase { Id = product.Id, Name = product.Name, Price = product.Price });
-            }
-
-            return products;
+            return _productService.GetProducts(name, priceMin, priceMax);
         }
 
         // GET: api/product/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductEntity([FromRoute] long id)
+        public async Task<IActionResult> GetProduct([FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var productEntity = await _productRepository.GetItemById(id);
+            var product = await _productService.GetProduct(id);
 
-            if (productEntity == null)
+            if (product == null)
             {
                 return NotFound();
             }
 
-            try
-            {
-                if (productEntity.PictureName != null)
-                {
-                    productEntity.PictureName =
-                        Path.Combine(_env.ContentRootPath, "Images", productEntity.PictureName);
-                }
-                
-                return Ok(productEntity);
-            }
-            catch (System.Exception e)
-            {
-                Debug.WriteLine(e);
-
-                return BadRequest();
-            }
+            return Ok(product);            
         }
 
         // PUT: api/product/5
@@ -106,74 +55,31 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            product.Id = id;
+
+            bool isSuccess = await _productService.Edit(product);
+
+            if (isSuccess)
             {
-                var productEntity = _mapper.Map<ProductEntity>(product);
-                productEntity.Id = id;
-
-                _productRepository.Update(productEntity);
-
-                await _productRepository.Save();
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            else
             {
-                if (!ProductEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
-
-            return NoContent();
         }
 
         // PUT: api/product/image/5
         [HttpPut("image/{id}")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PutProductEntityWithImage([FromRoute] long id,
-            IFormFile image, string name, string price, string description)
+        public async Task<IActionResult> PutProductEntityWithImage(
+            [FromRoute] long id,
+            IFormFile image,
+            Product product)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            product.Image = image;
 
-            try
-            {
-                var productEntity = new ProductEntity
-                {
-                    Id = id,
-                    Name = name,
-                    Price = double.Parse(price, CultureInfo.InvariantCulture),
-                    Description = description
-                };
-
-                productEntity.PictureName = await SaveImage(image);
-
-                _productRepository.Update(productEntity);
-
-                await _productRepository.Save();
-            }
-            catch(System.FormatException fe)
-            {
-                return BadRequest(fe);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return await PutProductEntity(id, product);
         }
 
         // POST: api/product
@@ -186,37 +92,19 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productEntity = _mapper.Map<ProductEntity>(product);
-            //productEntity.PictureName = await SaveImage(product);
+            await _productService.Add(product);
 
-            await _productRepository.Create(productEntity);
-
-            return CreatedAtAction("PostProductEntity", new { id = productEntity.Id }, product);
+            return CreatedAtAction("PostProductEntity", new { id = product.Id }, product);
         }
 
         // POST: api/product/image
         [HttpPost("image")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PostProductEntityWithImage(
-            IFormFile image, string name, string price, string description)
+        public async Task<IActionResult> PostProductEntityWithImage(IFormFile image, Product product)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            product.Image = image;
 
-            var productEntity = new ProductEntity
-            {
-                Name = name,
-                Price = double.Parse(price, CultureInfo.InvariantCulture),
-                Description = description
-            };
-
-            productEntity.PictureName = await SaveImage(image);
-
-            await _productRepository.Create(productEntity);
-
-            return CreatedAtAction("PostProductEntity", new { id = productEntity.Id }, productEntity);
+            return await PostProductEntity(product);
         }
 
         // DELETE: api/product/5
@@ -229,50 +117,16 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var productEntity = await _productRepository.GetItemById(id);
-            if (productEntity == null)
+            bool isSuccess = await _productService.Delete(id);
+
+            if (isSuccess)
             {
-                return NotFound();
+                return Ok();
             }
-
-            if (productEntity.PictureName != null)
+            else
             {
-                try
-                {
-                    string filePath = Path.Combine(_env.ContentRootPath, "Images", productEntity.PictureName);
-                    System.IO.File.Delete(filePath);
-                }
-                catch(System.Exception e)
-                {
-                    Debug.WriteLine(e);
-                }
+                return BadRequest();
             }
-            
-            await _productRepository.Remove(productEntity);
-
-            return Ok(productEntity);
-        }
-
-        private bool ProductEntityExists(long id)
-        {
-            return _productRepository.GetItemList().Any(e => e.Id == id);
-        }
-
-        private async Task<string> SaveImage(IFormFile image)
-        {
-            string fileName = image.FileName;
-
-            if (image != null && image.Length > 0)
-            {
-                string filePath = Path.Combine(_env.ContentRootPath, "Images", fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
-            }
-
-            return fileName;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using ProductsWebAdmin.Models;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -70,39 +69,7 @@ namespace ProductsWebAdmin.Services
             HttpResponseMessage response = await _client.PostAsync(uri, httpContent);
 
             return response.StatusCode;
-        }
-
-        private HttpContent GetProductHttpContent(Product product)
-        {
-            HttpContent productContent;
-
-            if (product.Image != null)
-            {
-                byte[] imageData;
-                using (var br = new BinaryReader(product.Image.OpenReadStream()))
-                {
-                    imageData = br.ReadBytes((int)product.Image.OpenReadStream().Length);
-                }
-              
-                var imageBytes = new ByteArrayContent(imageData);
-
-                productContent = new MultipartFormDataContent
-                {
-                    { imageBytes, "Image", product.Image.FileName },
-                    { new StringContent(product.Name), "Name" },
-                    { new StringContent(product.Price.ToString()), "Price" },
-                    //{ new StringContent(product?.Description), "Description" }
-                };                
-            }
-            else
-            {
-                var productJson = JsonConvert.SerializeObject(product);
-                productContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productJson));
-                productContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");                
-            }
-
-            return productContent;
-        }
+        }       
 
         public async Task<HttpStatusCode> Edit(Product product, string token)
         {            
@@ -111,15 +78,11 @@ namespace ProductsWebAdmin.Services
 
             var httpContent = GetProductHttpContent(product);
 
-            string uri;
+            string uri = $"api/product/{product.Id}";
 
             if (httpContent is MultipartFormDataContent)
             {
                 uri = $"api/product/image/{product.Id}";
-            }
-            else
-            {
-                uri = $"api/product/{product.Id}";
             }
 
             HttpResponseMessage response = await _client.PutAsync(uri, httpContent);
@@ -135,6 +98,43 @@ namespace ProductsWebAdmin.Services
             HttpResponseMessage response = await _client.DeleteAsync($"api/product/{id}");
 
             return response.StatusCode;
+        }
+
+        private HttpContent GetProductHttpContent(Product product)
+        {
+            HttpContent productContent;
+
+            if (product.Image != null)
+            {
+                byte[] imageData;
+                using (var br = new BinaryReader(product.Image.OpenReadStream()))
+                {
+                    imageData = br.ReadBytes((int)product.Image.OpenReadStream().Length);
+                }
+
+                var imageBytes = new ByteArrayContent(imageData);
+
+                productContent = new MultipartFormDataContent
+                {
+                    { imageBytes, "Image", product.Image.FileName },
+                    { new StringContent(product.Name), "Name" },
+                    { new StringContent(product.Price.ToString()), "Price" },
+                };
+
+                if (product.Description != null)
+                {
+                    (productContent as MultipartFormDataContent).Add(
+                        new StringContent(product.Description), "Description");
+                }
+            }
+            else
+            {
+                var productJson = JsonConvert.SerializeObject(product);
+                productContent = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(productJson));
+                productContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
+
+            return productContent;
         }
     }
 }
