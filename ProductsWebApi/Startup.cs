@@ -59,6 +59,8 @@ namespace ProductsWebApi
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IAuthService, JwtAuthService>();
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddCors();
             services.AddMvc(options =>
             {
                 var jsonInputFormatter = options.InputFormatters.OfType<JsonInputFormatter>().First();
@@ -74,6 +76,7 @@ namespace ProductsWebApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(builder => builder.AllowAnyOrigin());
             app.UseAuthentication();
 
             app.UseMvc();
