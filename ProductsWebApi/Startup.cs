@@ -17,9 +17,12 @@ namespace ProductsWebApi
 {
     public class Startup
     {
+        private readonly string _corsPolicyName;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            _corsPolicyName = "allowAnyOrigin";
         }
 
         public IConfiguration Configuration { get; }
@@ -60,7 +63,14 @@ namespace ProductsWebApi
             services.AddTransient<IAuthService, JwtAuthService>();
             services.AddAutoMapper(typeof(Startup));
 
-            services.AddCors();
+            services.AddCors(options => options.AddPolicy(
+                _corsPolicyName,
+                builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+            ));
+
             services.AddMvc(options =>
             {
                 var jsonInputFormatter = options.InputFormatters.OfType<JsonInputFormatter>().First();
@@ -76,7 +86,7 @@ namespace ProductsWebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors(builder => builder.AllowAnyOrigin());
+            app.UseCors(_corsPolicyName);
             app.UseAuthentication();
 
             app.UseMvc();
