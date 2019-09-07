@@ -1,0 +1,1 @@
+[![Build Status](https://dev.azure.com/vdmkrchkn/ProductsWebAdmin/_apis/build/status/ProductsWeb?branchName=master)](https://dev.azure.com/vdmkrchkn/ProductsWebAdmin/_build/latest?definitionId=3&branchName=master)
