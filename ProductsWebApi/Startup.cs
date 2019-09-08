@@ -55,7 +55,7 @@ namespace ProductsWebApi
                     };
                 });
 
-            var connection = Configuration.GetConnectionString("MsSqlConnection");
+            var connection = Configuration.GetConnectionString("AzureSqlConnection");
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
             
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
