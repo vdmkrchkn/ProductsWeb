@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using ProductsWebApi.Models.Json;
 using ProductsWebApi.Services;
 using System.Threading.Tasks;
 
@@ -17,8 +18,19 @@ namespace ProductsWebApi.Controllers
             _authService = authService;
         }
 
+        /// <summary>
+        /// Verify user credentials
+        /// </summary>
+        /// <param name="user">User credentials</param>
+        /// <returns>JWT token</returns>
+        /// <response code="200">Returns user JWT token data</response>
+        /// <response code="400">If the user is null</response>
+        /// <response code="401">If the user is invalid</response>
         [HttpPost]
-        public async Task Verify([FromBody] Models.Json.User user)
+        [ProducesResponseType(typeof(AuthToken), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task Verify([FromBody] User user)
         {
             if (user == null)
             {
