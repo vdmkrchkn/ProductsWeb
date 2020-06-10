@@ -8,7 +8,7 @@ namespace ProductsWebApi.Services
         /// Verify user's credentials by providing token
         /// </summary>
         /// <param name="user">user's login credentials</param>
-        /// <returns>JWT token object. Or null if user is invalid</returns>
+        /// <returns>JWT token object. Or null unless user is valid</returns>
         AuthToken GetToken(User user);
     }
 }

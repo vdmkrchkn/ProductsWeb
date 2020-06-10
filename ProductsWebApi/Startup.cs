@@ -10,7 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
 using ProductsWebApi.Services;
+using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace ProductsWebApi
@@ -55,12 +59,13 @@ namespace ProductsWebApi
                     };
                 });
 
-            var connection = Configuration.GetConnectionString("AzureSqlConnection");
+            var connection = Configuration.GetConnectionString("MsSqlLocalConnection");
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
-            
+
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IAuthService, JwtAuthService>();
+
             services.AddAutoMapper(typeof(Startup));
 
             services.AddCors(options => options.AddPolicy(
@@ -76,6 +81,15 @@ namespace ProductsWebApi
                 var jsonInputFormatter = options.InputFormatters.OfType<JsonInputFormatter>().First();
                 jsonInputFormatter.SupportedMediaTypes.Add("multipart/form-data");
             });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "ProductsWeb API", Version = "v1" });
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,6 +98,13 @@ namespace ProductsWebApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductsWeb API");
+                    c.RoutePrefix = string.Empty;                    
+                });
             }
 
             app.UseCors(_corsPolicyName);
