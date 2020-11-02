@@ -11,8 +11,8 @@ namespace ProductsWebApi.Models
         IEnumerable<T> GetItemList();
         // получить сущность по id
         Task<T> GetItemById(long id);
-        // создать сущность
-        Task Create(T item);
+        // создать сущность и вернуть id
+        Task<long> Create(T item);
         // обновить сущность
         void Update(T item);
         // удалить сущность

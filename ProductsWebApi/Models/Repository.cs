@@ -50,13 +50,15 @@ namespace ProductsWebApi.Models
 
         #region IRepository
 
-        public async Task Create(T entity)
+        public async Task<long> Create(T entity)
         {
             if (entity == null)
                 throw new ArgumentNullException("entity");
 
-            await Entities.AddAsync(entity);
+            var result = await Entities.AddAsync(entity);
             await Save();
+
+            return result.Entity.Id;
         }        
 
         public async Task<T> GetItemById(long id)

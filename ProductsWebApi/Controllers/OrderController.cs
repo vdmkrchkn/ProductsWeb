@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProductsWebApi.Models.Json;
+using ProductsWebApi.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,21 +10,27 @@ namespace ProductsWebApi.Controllers
     [Route("api/order")]
     public class OrderController : Controller
     {
-        static List<Order> orders = new List<Order>();
-        static int orderIdCounter = -1;
+        private readonly IOrderService _orderService;
+        
+        public OrderController(IOrderService orderService)
+        {
+            _orderService = orderService;
+        }
 
         // GET: api/order
         [HttpGet]
         public IEnumerable<Order> Get()
         {
-            return orders;
+            return _orderService.GetOrders();
         }
 
         // GET: api/order/5
         [HttpGet("{id}", Name = "Get")]
-        public Order Get(int id)
+        public async Task<IActionResult> GetAsync(int id)
         {
-            return orders[id];
+            var order = await _orderService.GetOrderById(id);
+
+            return Ok(order);
         }
         
         // POST: api/order
@@ -35,10 +42,9 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            orders.Add(order);
-            ++orderIdCounter;
+            var orderId = await _orderService.Add(order);
 
-            return Created($"api/order/{orderIdCounter}", order);
+            return Created($"api/order/{orderId}", null);
         }
         
         // PUT: api/order/5

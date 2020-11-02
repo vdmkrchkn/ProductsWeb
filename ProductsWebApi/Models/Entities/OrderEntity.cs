@@ -1,9 +1,10 @@
-﻿namespace ProductsWebApi.Models.Json
-{
-    public class Order
-    {
-        public long Id { get; set; }
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+namespace ProductsWebApi.Models.Entities
+{
+    [Table("Orders")]
+    public class OrderEntity : BaseEntity
+    {
         public long ProductId { get; set; }
 
         public int Warranty { get; set; }

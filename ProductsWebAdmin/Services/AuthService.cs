@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using ProductsWebAdmin.Models;
+using ProductsWebAdmin.Models.Extensions;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,11 +13,11 @@ namespace ProductsWebAdmin.Services
     {
         private readonly HttpClient _client; // TODO: use as singleton
 
-        public AuthService()
+        public AuthService(IOptions<ApplicationSettings> appSettings)
         {
             _client = new HttpClient
             {
-                BaseAddress = new Uri("http://localhost:31549/"), // TODO: use config
+                BaseAddress = new Uri(appSettings.Value.ApiUrl),
             };
 
             _client.DefaultRequestHeaders.Accept.Clear();

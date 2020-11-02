@@ -18,6 +18,9 @@ namespace ProductsWebApi.Models
                 .ForMember(product => product.Image, opt => opt.Ignore())
                 .ForMember(product => product.Price,
                     opt => opt.MapFrom(productEntity => productEntity.Price.ToString(doubleFormat)));
+
+            CreateMap<Order, OrderEntity>(MemberList.None);
+            CreateMap<OrderEntity, Order>(MemberList.None);
         }
     }
 }

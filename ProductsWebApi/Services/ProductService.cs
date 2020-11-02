@@ -30,6 +30,7 @@ namespace ProductsWebApi.Services
 
         public IEnumerable<ProductBase> GetProducts(string name, double? priceMin, double? priceMax)
         {
+            // TODO: return IQuerable 4 performance
             var productEntities = _productRepository.GetItemList();
 
             if (name != null)
