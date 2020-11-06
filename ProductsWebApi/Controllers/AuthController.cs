@@ -54,5 +54,11 @@ namespace ProductsWebApi.Controllers
                 JsonConvert.SerializeObject(
                     token, new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
+
+        [HttpPost("create")]
+        public async Task Register([FromBody] User user)
+        {
+            await _authService.AddUser(user);
+        }
     }
 }

@@ -11,9 +11,10 @@ using System;
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EFDbContext))]
-    partial class EFDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201106082950_AddUserTable")]
+    partial class AddUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,9 +52,6 @@ namespace ProductsWebApi.Migrations
                         .IsRequired();
 
                     b.Property<string>("Role")
-                        .IsRequired();
-
-                    b.Property<string>("Salt")
                         .IsRequired();
 
                     b.HasKey("Id");

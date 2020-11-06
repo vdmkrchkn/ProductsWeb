@@ -11,9 +11,10 @@ using System;
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EFDbContext))]
-    partial class EFDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201106141949_AddUserSalt")]
+    partial class AddUserSalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using ProductsWebAdmin.Models;
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -9,14 +8,11 @@ namespace ProductsWebAdmin.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly HttpClient _client; // TODO: use as singleton
+        private readonly HttpClient _client;
 
-        public AuthService()
+        public AuthService(HttpClientProvider httpClient)
         {
-            _client = new HttpClient
-            {
-                BaseAddress = new Uri("http://localhost:31549/"), // TODO: use config
-            };
+            _client = httpClient.Client;
 
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(

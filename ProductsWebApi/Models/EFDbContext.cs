@@ -18,6 +18,7 @@ namespace ProductsWebApi.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProductEntity>();
+            modelBuilder.Entity<UserEntity>();
 
             base.OnModelCreating(modelBuilder);
         }

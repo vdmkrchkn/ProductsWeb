@@ -1,31 +1,33 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
 using ProductsWebApi.Models.Json;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
 
 namespace ProductsWebApi.Services
 {
     public class JwtAuthService : IAuthService
     {
-        private readonly IList<Models.Extensions.User> _users;
+        private readonly IUserService _userService;
         private readonly AuthOptions _token;
 
-        public JwtAuthService(IOptions<ApplicationSettings> appSettings)
+        public JwtAuthService(IOptions<ApplicationSettings> appSettings, IUserService userService)
         {
-            _users = appSettings.Value.Users;
+            _userService = userService;
             _token = appSettings.Value.AuthToken;
         }
         
-        public AuthToken GetToken(Models.Json.User user)
+        public AuthToken GetToken(User user)
         {
-            var identity = GetIdentity(user);
+            var identity = GetIdentity(user);            
 
             if (identity == null)
             {
@@ -52,26 +54,64 @@ namespace ProductsWebApi.Services
             return authToken;
         }
 
-        private ClaimsIdentity GetIdentity(Models.Json.User verifiedUser)
+        public async Task AddUser(User user)
         {
-            var person = _users.FirstOrDefault(user =>
-                user.Login == verifiedUser.Username && user.Password == verifiedUser.Password);
+            byte[] salt = GetPseudorandomByteArray();
+            string password = GetHashString(user.Password, salt);
 
-            if (person != null)
+            await _userService.Add(new Models.Entities.UserEntity {
+                Name = user.Username,
+                Password = password,
+                Salt = Convert.ToBase64String(salt),
+                Role = "admin"
+            });
+        }
+
+        private ClaimsIdentity GetIdentity(User verifiedUser)
+        {
+            var user = _userService.FindUserByName(verifiedUser.Username);
+
+            if (user != null) 
             {
+                string hashedPassword = GetHashString(verifiedUser.Password, Convert.FromBase64String(user.Salt));
+
+                if (!user.IsPasswordValid(hashedPassword)) return null;
+
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, person.Login),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, person.Role)
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name),
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
                 };
 
-                ClaimsIdentity claimsIdentity =
-                new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
-                    ClaimsIdentity.DefaultRoleClaimType);
-                return claimsIdentity;
+                return new ClaimsIdentity(claims, "Token",
+                    ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType
+                );
             }
 
             return null;
+        }
+
+        private byte[] GetPseudorandomByteArray()
+        {
+            var salt = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+
+            return salt;
+        }
+
+        private string GetHashString(string str, byte[] salt)
+        {
+            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: str,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA1,
+                iterationCount: 10000,
+                numBytesRequested: 32
+            ));
         }
     }
 }

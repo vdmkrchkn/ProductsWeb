@@ -65,6 +65,7 @@ namespace ProductsWebApi
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IAuthService, JwtAuthService>();
+            services.AddTransient<IUserService, UserService>();
 
             services.AddAutoMapper(typeof(Startup));
 
