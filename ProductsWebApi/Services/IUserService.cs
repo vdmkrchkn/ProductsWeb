@@ -7,6 +7,6 @@ namespace ProductsWebApi.Services
     {
         UserEntity FindUserByName(string name);
 
-        Task<bool> Add(UserEntity user);
+        Task<long> Add(UserEntity user);
     }
 }

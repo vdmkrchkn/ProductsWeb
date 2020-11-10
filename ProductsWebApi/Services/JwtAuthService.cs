@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.Extensions.Logging;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
 using ProductsWebApi.Models.Json;
@@ -16,13 +17,18 @@ namespace ProductsWebApi.Services
 {
     public class JwtAuthService : IAuthService
     {
-        private readonly IUserService _userService;
         private readonly AuthOptions _token;
+        private readonly IUserService _userService;
+        private ILogger<JwtAuthService> _logger;
 
-        public JwtAuthService(IOptions<ApplicationSettings> appSettings, IUserService userService)
+        public JwtAuthService(
+            IOptions<ApplicationSettings> appSettings,
+            ILogger<JwtAuthService> logger,
+            IUserService userService)
         {
-            _userService = userService;
             _token = appSettings.Value.AuthToken;
+            _logger = logger;
+            _userService = userService;
         }
         
         public AuthToken GetToken(User user)
@@ -54,22 +60,32 @@ namespace ProductsWebApi.Services
             return authToken;
         }
 
-        public async Task AddUser(User user)
+        public async Task<bool> AddUser(User user)
         {
-            byte[] salt = GetPseudorandomByteArray();
-            string password = GetHashString(user.Password, salt);
+            try
+            {
+                byte[] salt = GetPseudorandomByteArray();
+                
+                await _userService.Add(new Models.Entities.UserEntity {
+                    Name = user.Name,
+                    Password = GetHashString(user.Password, salt),
+                    Salt = Convert.ToBase64String(salt),
+                    Role = "admin"
+                });
 
-            await _userService.Add(new Models.Entities.UserEntity {
-                Name = user.Username,
-                Password = password,
-                Salt = Convert.ToBase64String(salt),
-                Role = "admin"
-            });
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "");
+            }
+
+            return false;
         }
 
         private ClaimsIdentity GetIdentity(User verifiedUser)
         {
-            var user = _userService.FindUserByName(verifiedUser.Username);
+            var user = _userService.FindUserByName(verifiedUser.Name);
 
             if (user != null) 
             {
@@ -92,7 +108,7 @@ namespace ProductsWebApi.Services
             return null;
         }
 
-        private byte[] GetPseudorandomByteArray()
+        private static byte[] GetPseudorandomByteArray()
         {
             var salt = new byte[16];
             using (var rng = RandomNumberGenerator.Create())
@@ -103,7 +119,7 @@ namespace ProductsWebApi.Services
             return salt;
         }
 
-        private string GetHashString(string str, byte[] salt)
+        private static string GetHashString(string str, byte[] salt)
         {
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: str,

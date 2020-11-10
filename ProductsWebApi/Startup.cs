@@ -22,20 +22,19 @@ namespace ProductsWebApi
     public class Startup
     {
         private readonly string _corsPolicyName;
+        private readonly IConfiguration _configuration;
 
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
             _corsPolicyName = "allowAnyOrigin";
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            var appSettingsSection = Configuration.GetSection("ApplicationSettings");
+            var appSettingsSection = _configuration.GetSection("ApplicationSettings");
             services.Configure<ApplicationSettings>(appSettingsSection);
 
             var appSettings = appSettingsSection.Get<ApplicationSettings>();

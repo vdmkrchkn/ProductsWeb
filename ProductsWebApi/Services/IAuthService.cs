@@ -12,6 +12,6 @@ namespace ProductsWebApi.Services
         /// <returns>JWT token object. Or null unless user is valid</returns>
         AuthToken GetToken(User user);
 
-        Task AddUser(User user);
+        Task<bool> AddUser(User user);
     }
 }

@@ -55,10 +55,24 @@ namespace ProductsWebApi.Controllers
                     token, new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
 
-        [HttpPost("create")]
-        public async Task Register([FromBody] User user)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] User user)
         {
-            await _authService.AddUser(user);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            bool isRegistered = await _authService.AddUser(user);
+
+            if (isRegistered)
+            {
+                return Ok();    
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

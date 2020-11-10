@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Entities;
@@ -14,10 +15,14 @@ namespace ProductsWebApi.Services
             _userRepository = userRepository;
         }
 
-        public async Task<bool> Add(UserEntity user)
+        public async Task<long> Add(UserEntity user)
         {
-            await _userRepository.Create(user);
-            return true;
+            if (FindUserByName(user.Name) != null)
+            {
+                throw new Exception($"There is a registered user with name \'{user.Name}\'");
+            }
+
+            return await _userRepository.Create(user);
         }
 
         public UserEntity FindUserByName(string name)
