@@ -19,15 +19,12 @@ namespace ProductsWebApi.Services
     {
         private readonly AuthOptions _token;
         private readonly IUserService _userService;
-        private ILogger<JwtAuthService> _logger;
 
         public JwtAuthService(
             IOptions<ApplicationSettings> appSettings,
-            ILogger<JwtAuthService> logger,
             IUserService userService)
         {
             _token = appSettings.Value.AuthToken;
-            _logger = logger;
             _userService = userService;
         }
         
@@ -60,38 +57,13 @@ namespace ProductsWebApi.Services
             return authToken;
         }
 
-        public async Task<bool> AddUser(User user)
-        {
-            try
-            {
-                byte[] salt = GetPseudorandomByteArray();
-                
-                await _userService.Add(new Models.Entities.UserEntity {
-                    Name = user.Name,
-                    Password = GetHashString(user.Password, salt),
-                    Salt = Convert.ToBase64String(salt),
-                    Role = "admin"
-                });
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "");
-            }
-
-            return false;
-        }
-
         private ClaimsIdentity GetIdentity(User verifiedUser)
         {
             var user = _userService.FindUserByName(verifiedUser.Name);
 
             if (user != null) 
             {
-                string hashedPassword = GetHashString(verifiedUser.Password, Convert.FromBase64String(user.Salt));
-
-                if (!user.IsPasswordValid(hashedPassword)) return null;
+                if (!user.IsPasswordValid(verifiedUser.Password)) return null;
 
                 var claims = new List<Claim>
                 {
@@ -106,28 +78,6 @@ namespace ProductsWebApi.Services
             }
 
             return null;
-        }
-
-        private static byte[] GetPseudorandomByteArray()
-        {
-            var salt = new byte[16];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
-            return salt;
-        }
-
-        private static string GetHashString(string str, byte[] salt)
-        {
-            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: str,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA1,
-                iterationCount: 10000,
-                numBytesRequested: 32
-            ));
         }
     }
 }

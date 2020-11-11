@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ProductsWebApi.Models.Json;
 using ProductsWebApi.Services;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ProductsWebApi.Controllers
 {
@@ -11,11 +13,18 @@ namespace ProductsWebApi.Controllers
     [Route("api/auth")]
     public class AuthController : Controller
     {
+        private readonly ILogger<AuthController> _logger;
         private readonly IAuthService _authService;
+        private readonly IUserService _userService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            ILogger<AuthController> logger,
+            IAuthService authService,
+            IUserService userService)
         {
+            _logger = logger;
             _authService = authService;
+            _userService = userService;
         }
 
         /// <summary>
@@ -55,7 +64,16 @@ namespace ProductsWebApi.Controllers
                     token, new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
 
+        /// <summary>
+        /// Register new user
+        /// </summary>
+        /// <param name="user">User credentials</param>
+        /// <returns></returns>
+        /// <response code="200">User has registered successfully</response>
+        /// <response code="400">If the user is invalid</response>
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] User user)
         {
             if (!ModelState.IsValid)
@@ -63,14 +81,15 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            bool isRegistered = await _authService.AddUser(user);
+            try
+            {
+                await _userService.Add(user, "admin");
 
-            if (isRegistered)
-            {
-                return Ok();    
+                return Ok();
             }
-            else
+            catch (Exception e)
             {
+                _logger.LogWarning(e, "");
                 return BadRequest();
             }
         }

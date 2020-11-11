@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Entities;
+using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Services
 {
@@ -15,14 +16,18 @@ namespace ProductsWebApi.Services
             _userRepository = userRepository;
         }
 
-        public async Task<long> Add(UserEntity user)
+        public async Task<long> Add(User user, string role)
         {
             if (FindUserByName(user.Name) != null)
             {
                 throw new Exception($"There is a registered user with name \'{user.Name}\'");
             }
 
-            return await _userRepository.Create(user);
+            return await _userRepository.Create(new UserEntity (
+                user.Name,
+                user.Password,
+                role
+            ));
         }
 
         public UserEntity FindUserByName(string name)

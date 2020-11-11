@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ProductsWebApi.Models.Entities;
+using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Services
 {
@@ -7,6 +8,6 @@ namespace ProductsWebApi.Services
     {
         UserEntity FindUserByName(string name);
 
-        Task<long> Add(UserEntity user);
+        Task<long> Add(User user, string role);
     }
 }
