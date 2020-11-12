@@ -1,31 +1,36 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.Extensions.Logging;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
 using ProductsWebApi.Models.Json;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
 
 namespace ProductsWebApi.Services
 {
     public class JwtAuthService : IAuthService
     {
-        private readonly IList<Models.Extensions.User> _users;
         private readonly AuthOptions _token;
+        private readonly IUserService _userService;
 
-        public JwtAuthService(IOptions<ApplicationSettings> appSettings)
+        public JwtAuthService(
+            IOptions<ApplicationSettings> appSettings,
+            IUserService userService)
         {
-            _users = appSettings.Value.Users;
             _token = appSettings.Value.AuthToken;
+            _userService = userService;
         }
         
-        public AuthToken GetToken(Models.Json.User user)
+        public AuthToken GetToken(User user)
         {
-            var identity = GetIdentity(user);
+            var identity = GetIdentity(user);            
 
             if (identity == null)
             {
@@ -52,23 +57,24 @@ namespace ProductsWebApi.Services
             return authToken;
         }
 
-        private ClaimsIdentity GetIdentity(Models.Json.User verifiedUser)
+        private ClaimsIdentity GetIdentity(User verifiedUser)
         {
-            var person = _users.FirstOrDefault(user =>
-                user.Login == verifiedUser.Username && user.Password == verifiedUser.Password);
+            var user = _userService.FindUserByName(verifiedUser.Name);
 
-            if (person != null)
+            if (user != null) 
             {
+                if (!user.IsPasswordValid(verifiedUser.Password)) return null;
+
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, person.Login),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, person.Role)
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name),
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
                 };
 
-                ClaimsIdentity claimsIdentity =
-                new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType,
-                    ClaimsIdentity.DefaultRoleClaimType);
-                return claimsIdentity;
+                return new ClaimsIdentity(claims, "Token",
+                    ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType
+                );
             }
 
             return null;

@@ -11,32 +11,15 @@ using System;
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EFDbContext))]
-    partial class EFDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201106082950_AddUserTable")]
+    partial class AddUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.0.3-rtm-10026")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("ProductsWebApi.Models.Entities.OrderEntity", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("DeliveryDate");
-
-                    b.Property<long>("ProductId");
-
-                    b.Property<string>("TimeSlot");
-
-                    b.Property<int>("Warranty");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
 
             modelBuilder.Entity("ProductsWebApi.Models.Entities.ProductEntity", b =>
                 {
@@ -69,9 +52,6 @@ namespace ProductsWebApi.Migrations
                         .IsRequired();
 
                     b.Property<string>("Role")
-                        .IsRequired();
-
-                    b.Property<string>("Salt")
                         .IsRequired();
 
                     b.HasKey("Id");
