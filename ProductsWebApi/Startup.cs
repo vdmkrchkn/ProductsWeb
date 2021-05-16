@@ -58,7 +58,7 @@ namespace ProductsWebApi
                     };
                 });
 
-            var connection = Configuration.GetConnectionString("MsSqlLocalConnection");
+            var connection = _configuration.GetConnectionString("MsSqlLocalConnection");
             services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
