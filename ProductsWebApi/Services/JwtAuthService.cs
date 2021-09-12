@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.Extensions.Logging;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
 using ProductsWebApi.Models.Json;
@@ -32,7 +28,7 @@ namespace ProductsWebApi.Services
         {
             var identity = GetIdentity(user);            
 
-            if (identity == null)
+            if (identity is null)
             {
                 return null;
             }
@@ -48,13 +44,11 @@ namespace ProductsWebApi.Services
                         new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_token.Key)), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            var authToken = new AuthToken
+            return new AuthToken
             {
                 Username = identity.Name,
                 Token = encodedJwt,
             };
-
-            return authToken;
         }
 
         private ClaimsIdentity GetIdentity(User verifiedUser)

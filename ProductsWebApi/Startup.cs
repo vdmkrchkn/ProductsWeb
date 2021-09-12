@@ -1,71 +1,37 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using ProductsWebApi.Models;
+using ProductsWebApi.Extensions;
 using ProductsWebApi.Models.Extensions;
-using ProductsWebApi.Services;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace ProductsWebApi
 {
     public class Startup
     {
-        private readonly string _corsPolicyName;
+        private const string _corsPolicyName = "allowAnyOrigin";
         private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration configuration)
-        {
-            _configuration = configuration;
-            _corsPolicyName = "allowAnyOrigin";
-        }
+        public Startup(IConfiguration configuration) => _configuration = configuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            var appSettingsSection = _configuration.GetSection("ApplicationSettings");
+
+            var appSettingsSection = _configuration.GetSection(nameof(ApplicationSettings));
             services.Configure<ApplicationSettings>(appSettingsSection);
 
-            var appSettings = appSettingsSection.Get<ApplicationSettings>();
+            services.ConfigureAuth(appSettingsSection.Get<ApplicationSettings>().AuthToken);
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.RequireHttpsMetadata = false;
-
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = appSettings.AuthToken.Issuer,
-
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.ASCII.GetBytes(appSettings.AuthToken.Key)),
-                        ValidateIssuerSigningKey = true,
-                    };
-                });
-
-            var connection = _configuration.GetConnectionString("MsSqlLocalConnection");
-            services.AddDbContext<EFDbContext>(options => options.UseSqlServer(connection));
-
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-            services.AddTransient<IProductService, ProductService>();
-            services.AddTransient<IOrderService, OrderService>();
-            services.AddTransient<IAuthService, JwtAuthService>();
-            services.AddTransient<IUserService, UserService>();
+            services.ConfigureDatabase(_configuration);
 
             services.AddAutoMapper(typeof(Startup));
 
@@ -99,14 +65,14 @@ namespace ProductsWebApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductsWeb API");
-                    c.RoutePrefix = string.Empty;                    
-                });
             }
+            app.MigrateDatabase();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductsWeb API");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseCors(_corsPolicyName);
             app.UseAuthentication();
