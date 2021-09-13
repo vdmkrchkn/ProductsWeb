@@ -3,11 +3,11 @@ using ProductsWebApi.Models.Entities;
 
 namespace ProductsWebApi.Models
 {
-    public class EFDbContext : DbContext
+    public class EfDbContext : DbContext
     {
         #region Ctor
 
-        public EFDbContext(DbContextOptions<EFDbContext> options) : base(options){ }
+        public EfDbContext(DbContextOptions<EfDbContext> options) : base(options){ }
 
         #endregion Ctor
 

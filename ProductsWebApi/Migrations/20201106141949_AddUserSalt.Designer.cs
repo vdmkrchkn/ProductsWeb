@@ -10,7 +10,7 @@ using System;
 
 namespace ProductsWebApi.Migrations
 {
-    [DbContext(typeof(EFDbContext))]
+    [DbContext(typeof(EfDbContext))]
     [Migration("20201106141949_AddUserSalt")]
     partial class AddUserSalt
     {

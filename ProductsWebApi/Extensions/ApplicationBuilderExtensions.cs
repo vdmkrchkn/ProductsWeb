@@ -16,7 +16,7 @@ namespace ProductsWebApi.Extensions
         {
             using (var scope = app.ApplicationServices.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<EFDbContext>().Database;
+                var db = scope.ServiceProvider.GetRequiredService<EfDbContext>().Database;
                 db.SetCommandTimeout(TimeSpan.FromMinutes(5));
                 db.Migrate();
 

@@ -19,10 +19,10 @@ namespace ProductsWebApi.Extensions
         /// <param name="config"><see cref="IConfiguration"/></param>
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<EFDbContext>((options) =>
+            services.AddDbContext<EfDbContext>(options =>
             {
-                var connection = config.GetConnectionString("MsSqlLocalConnection");
-                options.OnMsSqlConfiguring(connection);
+                var connection = config.GetConnectionString("DBConnection");
+                options.OnNpgsqlConfiguring(connection);
             },
                 ServiceLifetime.Scoped,
                 ServiceLifetime.Singleton);
@@ -41,11 +41,15 @@ namespace ProductsWebApi.Extensions
             return services;
         }
 
-        public static DbContextOptionsBuilder OnMsSqlConfiguring(this DbContextOptionsBuilder optionsBuilder, string connection) 
+        private static DbContextOptionsBuilder OnMsSqlConfiguring(this DbContextOptionsBuilder optionsBuilder, string connection)
             => optionsBuilder.UseSqlServer(connection, builder =>
             {
                 builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
             });
+
+        private static DbContextOptionsBuilder OnNpgsqlConfiguring(this DbContextOptionsBuilder optionsBuilder, string connection)
+            => optionsBuilder.UseNpgsql(connection)
+                .EnableSensitiveDataLogging();
 
         public static IServiceCollection ConfigureAuth(this IServiceCollection services, AuthOptions applicationSettings)
         {

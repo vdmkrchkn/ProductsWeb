@@ -12,7 +12,7 @@ namespace ProductsWebApi.Models
     {
         #region Dependencies  
 
-        private readonly EFDbContext _context;
+        private readonly EfDbContext _context;
 
         #endregion Dependencies  
 
@@ -24,7 +24,7 @@ namespace ProductsWebApi.Models
 
         #region Ctors
 
-        public Repository(EFDbContext context)
+        public Repository(EfDbContext context)
         {
             _context = context;
         }
