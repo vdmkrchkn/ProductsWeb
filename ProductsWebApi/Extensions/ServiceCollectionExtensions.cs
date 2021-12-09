@@ -7,6 +7,10 @@ using ProductsWebApi.Models;
 using ProductsWebApi.Services;
 using System;
 using System.Text;
+using Products.Web.Core;
+using Products.Web.Core.Services;
+using Products.Web.Infrastructure;
+using Products.Web.Infrastructure.Repositories;
 
 namespace ProductsWebApi.Extensions
 {
@@ -48,7 +52,7 @@ namespace ProductsWebApi.Extensions
             });
 
         private static DbContextOptionsBuilder OnNpgsqlConfiguring(this DbContextOptionsBuilder optionsBuilder, string connection)
-            => optionsBuilder.UseNpgsql(connection)
+            => optionsBuilder.UseNpgsql(connection, builder => builder.MigrationsAssembly("Products.Web.Infrastructure"))
                 .EnableSensitiveDataLogging();
 
         public static IServiceCollection ConfigureAuth(this IServiceCollection services, AuthOptions applicationSettings)

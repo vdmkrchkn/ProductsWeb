@@ -5,9 +5,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Products.Web.Core.Models;
+using Products.Web.Core.Services;
 using ProductsWebApi.Models;
 using ProductsWebApi.Models.Extensions;
-using ProductsWebApi.Models.Json;
 
 namespace ProductsWebApi.Services
 {
@@ -23,10 +24,10 @@ namespace ProductsWebApi.Services
             _token = appSettings.Value.AuthToken;
             _userService = userService;
         }
-        
+
         public AuthToken GetToken(User user)
         {
-            var identity = GetIdentity(user);            
+            var identity = GetIdentity(user);
 
             if (identity is null)
             {
@@ -55,23 +56,18 @@ namespace ProductsWebApi.Services
         {
             var user = _userService.FindUserByName(verifiedUser.Name);
 
-            if (user != null) 
+            if (user is null || !user.IsPasswordValid(verifiedUser.Password)) return null;
+
+            var claims = new List<Claim>
             {
-                if (!user.IsPasswordValid(verifiedUser.Password)) return null;
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
+            };
 
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name),
-                    new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role)
-                };
-
-                return new ClaimsIdentity(claims, "Token",
-                    ClaimsIdentity.DefaultNameClaimType,
-                    ClaimsIdentity.DefaultRoleClaimType
-                );
-            }
-
-            return null;
+            return new ClaimsIdentity(claims, "Token",
+                ClaimsIdentity.DefaultNameClaimType,
+                ClaimsIdentity.DefaultRoleClaimType
+            );
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProductsWebApi.Models.Entities;
+using Products.Web.Infrastructure.Entities;
 
-namespace ProductsWebApi.Models
+namespace Products.Web.Infrastructure
 {
+    /// <summary>
+    /// Стандартный контекст данных.
+    /// </summary>
     public class EfDbContext : DbContext
     {
         #region Ctor
@@ -13,12 +16,13 @@ namespace ProductsWebApi.Models
 
         #region DbContext
 
-        public new DbSet<TEntity> Set<TEntity>() where TEntity : class => base.Set<TEntity>();
+        public new DbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity => base.Set<TEntity>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProductEntity>();
-            modelBuilder.Entity<UserEntity>();
+            modelBuilder.Entity<User>().HasKey(entity => entity.Id);
+            modelBuilder.Entity<User>().Property(entity => entity.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<OrderEntity>();
 
             base.OnModelCreating(modelBuilder);

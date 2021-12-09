@@ -1,8 +1,8 @@
-﻿using ProductsWebApi.Models.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Products.Web.Core.Models;
 
-namespace ProductsWebApi.Services
+namespace Products.Web.Core.Services
 {
     public interface IOrderService
     {

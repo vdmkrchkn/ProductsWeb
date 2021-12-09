@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Json;
+using Products.Web.Core.Models;
+using Products.Web.Infrastructure.Entities;
 
-namespace ProductsWebApi.Models
+namespace Products.Web.Core.MappingProfiles
 {
     public class OrderProfile : Profile
     {

@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProductsWebApi.Models.Json;
 using ProductsWebApi.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Products.Web.Core.Models;
+using Products.Web.Core.Services;
 
 namespace ProductsWebApi.Controllers
 {

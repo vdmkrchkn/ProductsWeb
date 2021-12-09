@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ProductsWebApi.Models.Entities
+namespace Products.Web.Infrastructure.Entities
 {
     [Table("Orders")]
     public class OrderEntity : BaseEntity

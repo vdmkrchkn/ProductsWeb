@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductsWebApi.Models.Json
+namespace Products.Web.Core.Models
 {
-    public class ProductBase
+    public class ProductBase : BaseJson
     {
-        public long Id { get; set; }
-
         [Required]
         public string Name { get; set; }
 

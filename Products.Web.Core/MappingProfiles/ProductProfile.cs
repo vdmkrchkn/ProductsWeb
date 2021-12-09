@@ -1,9 +1,9 @@
-﻿using AutoMapper;
-using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Json;
-using System.Globalization;
+﻿using System.Globalization;
+using AutoMapper;
+using Products.Web.Core.Models;
+using Products.Web.Infrastructure.Entities;
 
-namespace ProductsWebApi.Models
+namespace Products.Web.Core.MappingProfiles
 {
     public class ProductProfile : Profile
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ProductsWebApi.Models.Entities
+namespace Products.Web.Infrastructure.Entities
 {
     [Table("Products")]
     public class ProductEntity : ProductBaseEntity

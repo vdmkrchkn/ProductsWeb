@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProductsWebApi.Models.Entities
+namespace Products.Web.Infrastructure.Entities
 {
     public class ProductBaseEntity : BaseEntity
     {

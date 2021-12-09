@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using ProductsWebApi.Models.Json;
+﻿using Products.Web.Core.Models;
 
-namespace ProductsWebApi.Services
+namespace Products.Web.Core.Services
 {
     public interface IAuthService
     {

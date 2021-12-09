@@ -1,4 +1,4 @@
-﻿namespace ProductsWebApi.Models.Json
+﻿namespace Products.Web.Core.Models
 {
     public class User
     {

@@ -4,16 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
-namespace ProductsWebApi.Models.Entities
+namespace Products.Web.Infrastructure.Entities
 {
     [Table("Users")]
-    public class UserEntity : BaseEntity
+    public class User : BaseEntity
     {
-        public UserEntity() { }
-        public UserEntity(string name, string password, string role)
+        public User() { }
+        public User(string name, string password, string role)
         {
             Name = name;
-            
+
             byte[] salt = GetPseudorandomByteArray();
 
             Password = GetHashString(password, salt);
@@ -33,9 +33,9 @@ namespace ProductsWebApi.Models.Entities
         [Required]
         public string Role { get; set; }
 
-        public bool IsPasswordValid(string password) => 
+        public bool IsPasswordValid(string password) =>
             Password == GetHashString(password, Convert.FromBase64String(Salt));
-        
+
         private static byte[] GetPseudorandomByteArray()
         {
             var salt = new byte[16];
@@ -46,7 +46,7 @@ namespace ProductsWebApi.Models.Entities
 
             return salt;
         }
-        
+
         private static string GetHashString(string str, byte[] salt)
         {
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(

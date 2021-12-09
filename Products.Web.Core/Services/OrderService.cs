@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using ProductsWebApi.Models;
-using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Json;
+using Products.Web.Core.Models;
+using Products.Web.Infrastructure;
+using Products.Web.Infrastructure.Entities;
+using Products.Web.Infrastructure.Repositories;
 
-namespace ProductsWebApi.Services
+namespace Products.Web.Core.Services
 {
     public class OrderService : IOrderService
     {
@@ -21,13 +22,13 @@ namespace ProductsWebApi.Services
         public async Task<long> Add(Order order)
         {
             var orderEntity = _mapper.Map<OrderEntity>(order);
-            var orderId = await _orderRepository.Create(orderEntity);
+            var orderId = await _orderRepository.CreateAsync(orderEntity);
             return orderId;
         }
 
         public async Task<Order> GetOrderById(long id)
         {
-            var orderEntity = await _orderRepository.GetItemById(id);
+            var orderEntity = await _orderRepository.GetItemByIdAsync(id);
 
             var order = _mapper.Map<Order>(orderEntity);
 

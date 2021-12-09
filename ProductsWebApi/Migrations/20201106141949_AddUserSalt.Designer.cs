@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using ProductsWebApi.Models;
 using System;
+using Products.Web.Infrastructure;
 
 namespace ProductsWebApi.Migrations
 {

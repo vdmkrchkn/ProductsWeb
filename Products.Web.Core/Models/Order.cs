@@ -1,9 +1,7 @@
-﻿namespace ProductsWebApi.Models.Json
+﻿namespace Products.Web.Core.Models
 {
-    public class Order
+    public class Order : BaseJson
     {
-        public long Id { get; set; }
-
         public long ProductId { get; set; }
 
         public int Warranty { get; set; }
