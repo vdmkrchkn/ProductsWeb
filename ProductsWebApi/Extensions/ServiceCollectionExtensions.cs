@@ -7,7 +7,6 @@ using ProductsWebApi.Models;
 using ProductsWebApi.Services;
 using System;
 using System.Text;
-using Products.Web.Core;
 using Products.Web.Core.Services;
 using Products.Web.Infrastructure;
 using Products.Web.Infrastructure.Repositories;
@@ -25,8 +24,8 @@ namespace ProductsWebApi.Extensions
         {
             services.AddDbContext<EfDbContext>(options =>
             {
-                var connection = config.GetConnectionString("DBConnection");
-                options.OnNpgsqlConfiguring(connection);
+                var connection = config.GetConnectionString("MssqlDBConnection");
+                options.OnMsSqlConfiguring(connection);
             },
                 ServiceLifetime.Scoped,
                 ServiceLifetime.Singleton);

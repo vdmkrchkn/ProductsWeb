@@ -24,6 +24,7 @@ namespace Products.Web.Infrastructure
             modelBuilder.Entity<User>().HasKey(entity => entity.Id);
             modelBuilder.Entity<User>().Property(entity => entity.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<OrderEntity>();
+            modelBuilder.Entity<PostOffice>().HasKey(entity => entity.Name);
 
             base.OnModelCreating(modelBuilder);
         }

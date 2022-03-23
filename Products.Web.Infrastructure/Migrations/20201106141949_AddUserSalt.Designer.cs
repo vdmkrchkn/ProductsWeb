@@ -3,41 +3,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using ProductsWebApi.Models;
-using System;
 using Products.Web.Infrastructure;
 
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EfDbContext))]
-    partial class EFDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201106141949_AddUserSalt")]
+    partial class AddUserSalt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.0.3-rtm-10026")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("ProductsWebApi.Models.Entities.OrderEntity", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("DeliveryDate");
-
-                    b.Property<long>("ProductId");
-
-                    b.Property<string>("TimeSlot");
-
-                    b.Property<int>("Warranty");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
 
             modelBuilder.Entity("ProductsWebApi.Models.Entities.ProductEntity", b =>
                 {

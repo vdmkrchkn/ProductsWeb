@@ -3,17 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using ProductsWebApi.Models;
-using System;
 using Products.Web.Infrastructure;
 
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EfDbContext))]
-    [Migration("20201106082950_AddUserTable")]
-    partial class AddUserTable
+    [Migration("20201109093806_AddOrderTable")]
+    partial class AddOrderTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,6 +17,24 @@ namespace ProductsWebApi.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.0.3-rtm-10026")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("ProductsWebApi.Models.Entities.OrderEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("DeliveryDate");
+
+                    b.Property<long>("ProductId");
+
+                    b.Property<string>("TimeSlot");
+
+                    b.Property<int>("Warranty");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Orders");
+                });
 
             modelBuilder.Entity("ProductsWebApi.Models.Entities.ProductEntity", b =>
                 {
@@ -53,6 +67,9 @@ namespace ProductsWebApi.Migrations
                         .IsRequired();
 
                     b.Property<string>("Role")
+                        .IsRequired();
+
+                    b.Property<string>("Salt")
                         .IsRequired();
 
                     b.HasKey("Id");

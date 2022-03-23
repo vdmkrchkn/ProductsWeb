@@ -2,7 +2,7 @@ namespace Products.Web.Core.Models
 {
     public class ProductSearchFilter
     {
-        public ProductSearchFilter(string name, double? priceMin, double? priceMax)
+        public ProductSearchFilter(string name, decimal? priceMin, decimal? priceMax)
         {
             Name = name;
             PriceMin = priceMin;
@@ -10,7 +10,7 @@ namespace Products.Web.Core.Models
         }
 
         public string Name { get; }
-        public double? PriceMin { get; }
-        public double? PriceMax { get; }
+        public decimal? PriceMin { get; }
+        public decimal? PriceMax { get; }
     }
 }

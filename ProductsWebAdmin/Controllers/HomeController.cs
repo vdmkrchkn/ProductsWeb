@@ -83,7 +83,7 @@ namespace ProductsWebAdmin.Controllers
 
             if (!HttpContext.Request.Cookies.TryGetValue("token", out string token))
             {
-                ModelState.AddModelError("editProduct", "invalid auth token");
+                ModelState.AddModelError("addProduct", "invalid auth token");
                 return RedirectToAction("Index", "Auth");
             }
 
@@ -99,7 +99,10 @@ namespace ProductsWebAdmin.Controllers
                 case HttpStatusCode.Created:
                     return RedirectToAction("Index");
                 default:
-                    return RedirectToAction("Edit");
+                    {
+                        ModelState.AddModelError("addProduct", statusCode.ToString());
+                        return RedirectToAction("Edit");
+                    }
             }
         }
 

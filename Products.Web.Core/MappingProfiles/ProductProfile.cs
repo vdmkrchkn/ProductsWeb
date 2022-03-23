@@ -13,7 +13,7 @@ namespace Products.Web.Core.MappingProfiles
 
             CreateMap<Product, ProductEntity>(MemberList.None)
                 .ForMember(productEntity => productEntity.Price,
-                    opt => opt.MapFrom(product => double.Parse(product.Price, doubleFormat)));
+                    opt => opt.MapFrom(product => decimal.Parse(product.Price, doubleFormat)));
             CreateMap<ProductEntity, Product>(MemberList.None)
                 .ForMember(product => product.Image, opt => opt.Ignore())
                 .ForMember(product => product.Price,

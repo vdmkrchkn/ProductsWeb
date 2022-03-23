@@ -3,17 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using ProductsWebApi.Models;
-using System;
 using Products.Web.Infrastructure;
 
 namespace ProductsWebApi.Migrations
 {
     [DbContext(typeof(EfDbContext))]
-    [Migration("20190815171410_WarehouseProducts-v1")]
-    partial class WarehouseProductsv1
+    [Migration("20201106082950_AddUserTable")]
+    partial class AddUserTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -39,6 +35,25 @@ namespace ProductsWebApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("ProductsWebApi.Models.Entities.UserEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("Password")
+                        .IsRequired();
+
+                    b.Property<string>("Role")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

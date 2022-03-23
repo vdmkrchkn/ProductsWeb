@@ -2,12 +2,15 @@
 
 namespace Products.Web.Infrastructure.Entities
 {
-    public class ProductBaseEntity : BaseEntity
+    public class PostOffice
     {
         [Required]
         public string Name { get; set; }
 
         [Required]
-        public decimal Price { get; set; }
+        public string Address { get; set; }
+
+        [Required]
+        public bool IsWorking { get; set; }
     }
 }

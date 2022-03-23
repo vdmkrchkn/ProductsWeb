@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Products.Web.Core.MappingProfiles;
 using ProductsWebApi.Extensions;
 using ProductsWebApi.Models.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
@@ -33,7 +34,10 @@ namespace ProductsWebApi
 
             services.ConfigureDatabase(_configuration);
 
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(
+                typeof(ProductProfile),
+                typeof(OrderProfile)
+            );
 
             services.AddCors(options => options.AddPolicy(
                 _corsPolicyName,

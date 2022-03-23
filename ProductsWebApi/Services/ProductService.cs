@@ -97,8 +97,9 @@ namespace ProductsWebApi.Services
 
                 await _productRepository.CreateAsync(productEntity);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.WriteLine(e);
                 return false;
             }
 

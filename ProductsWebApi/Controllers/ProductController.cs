@@ -18,7 +18,7 @@ namespace ProductsWebApi.Controllers
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductBase> GetProducts(string name, double? priceMin, double? priceMax) =>
+        public IEnumerable<ProductBase> GetProducts(string name, decimal? priceMin, decimal? priceMax) =>
             _productService.GetProducts(new ProductSearchFilter(name, priceMin, priceMax));
 
         // GET: api/product/5
@@ -85,9 +85,14 @@ namespace ProductsWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _productService.Add(product);
-
-            return CreatedAtAction("AddProduct", new { id = product.Id }, product);
+            if (await _productService.Add(product))
+            {
+                return CreatedAtAction("AddProduct", new { id = product.Id }, product);
+            }
+            else
+            {
+                return StatusCode(500, "internal error");
+            }
         }
 
         // POST: api/product/image
