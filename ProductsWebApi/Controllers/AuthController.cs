@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using ProductsWebApi.Models.Json;
 using ProductsWebApi.Services;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Products.Web.Core.Models;
+using Products.Web.Core.Services;
 
 namespace ProductsWebApi.Controllers
 {
@@ -36,12 +37,13 @@ namespace ProductsWebApi.Controllers
         /// <response code="400">If the user is null</response>
         /// <response code="401">If the user is invalid</response>
         [HttpPost]
+        [Produces("application/json")]
         [ProducesResponseType(typeof(AuthToken), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task Verify([FromBody] User user)
         {
-            if (user == null)
+            if (user is null)
             {
                 Response.StatusCode = 400;
                 await Response.WriteAsync("Invalid request body format");
@@ -50,7 +52,7 @@ namespace ProductsWebApi.Controllers
 
             var token = _authService.GetToken(user);
 
-            if (token == null)
+            if (token is null)
             {
                 Response.StatusCode = 401;
                 await Response.WriteAsync("Invalid username or password.");
@@ -83,9 +85,9 @@ namespace ProductsWebApi.Controllers
 
             try
             {
-                await _userService.Add(user, "admin");
+                var id = await _userService.Add(user, "admin");
 
-                return Ok();
+                return Ok(new { Id = id });
             }
             catch (Exception e)
             {

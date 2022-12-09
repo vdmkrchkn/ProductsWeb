@@ -1,18 +1,23 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using ProductsWebApi.Models;
-using ProductsWebApi.Models.Entities;
-using ProductsWebApi.Models.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Products.Web.Infrastructure;
+using Products.Web.Infrastructure.Entities;
+using Products.Web.Infrastructure.Repositories;
 
 namespace ProductsWebApi.Services
 {
+    using Products.Web.Core;
+    using Products.Web.Core.Models;
+    using Products.Web.Core.Services;
+
     public class ProductService : IProductService
     {
         private readonly IRepository<ProductEntity> _productRepository;
@@ -28,43 +33,39 @@ namespace ProductsWebApi.Services
             _mapper = mapper;
         }
 
-        public IEnumerable<ProductBase> GetProducts(string name, double? priceMin, double? priceMax)
+        public IEnumerable<ProductBase> GetProducts(ProductSearchFilter filter)
         {
-            // TODO: return IQuerable 4 performance
             var productEntities = _productRepository.GetItemList();
 
-            if (name != null)
+            if (filter.Name != null)
             {
-                productEntities = productEntities.Where(product => product.Name.StartsWith(name));
+                productEntities = productEntities.Where(product => product.Name.StartsWith(filter.Name));
             }
 
-            if (priceMin.HasValue)
+            if (filter.PriceMin.HasValue)
             {
-                productEntities = productEntities.Where(product => product.Price >= priceMin.Value);
+                productEntities = productEntities.Where(product => product.Price >= filter.PriceMin.Value);
             }
 
-            if (priceMax.HasValue)
+            if (filter.PriceMax.HasValue)
             {
-                productEntities = productEntities.Where(product => product.Price <= priceMax.Value);
+                productEntities = productEntities.Where(product => product.Price <= filter.PriceMax.Value);
             }
 
-            var products = new List<ProductBase>();
-            foreach (var product in productEntities)
+            return productEntities.Select(product => new ProductBase
             {
-                products.Add(new ProductBase
-                {
-                    Id = product.Id,
-                    Name = product.Name,
-                    Price = product.Price.ToString()
-                });
-            }
-
-            return products;
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price.ToString(CultureInfo.InvariantCulture)
+            }).ToList();
         }
 
-        public async Task<Product> GetProduct(long id)
+        public async Task<Product> GetProductById(long id)
         {
-            ProductEntity productEntity = await _productRepository.GetItemById(id);            
+            var productEntity = await _productRepository.GetItemByIdAsync(id);
+            await Task.Delay(1000);
+
+            if (productEntity is null) return null;
 
             try
             {
@@ -94,15 +95,16 @@ namespace ProductsWebApi.Services
 
                 productEntity.PictureName = await SaveImage(product);
 
-                await _productRepository.Create(productEntity);                
+                await _productRepository.CreateAsync(productEntity);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.WriteLine(e);
                 return false;
             }
 
             return true;
-        }       
+        }
 
         public async Task<bool> Edit(Product product)
         {
@@ -114,7 +116,7 @@ namespace ProductsWebApi.Services
 
                 _productRepository.Update(productEntity);
 
-                await _productRepository.Save();
+                await _productRepository.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -122,10 +124,8 @@ namespace ProductsWebApi.Services
                 {
                     return false;
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
 
             return true;
@@ -133,7 +133,7 @@ namespace ProductsWebApi.Services
 
         public async Task<bool> Delete(long id)
         {
-            var productEntity = await _productRepository.GetItemById(id);
+            var productEntity = await _productRepository.GetItemByIdAsync(id);
 
             if (productEntity == null)
             {
@@ -165,7 +165,7 @@ namespace ProductsWebApi.Services
         }
 
         private async Task<string> SaveImage(Product product)
-        {            
+        {
             if (product.Image == null || product.Image.Length == 0)
             {
                 return null;
@@ -177,10 +177,8 @@ namespace ProductsWebApi.Services
             {
                 string filePath = Path.Combine(_rootPath, "Images", fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await product.Image.CopyToAsync(stream);
-                }
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await product.Image.CopyToAsync(stream);
             }
             catch(Exception e)
             {

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ProductsWebApi.Models.Json;
-using ProductsWebApi.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Products.Web.Core.Models;
+using Products.Web.Core.Services;
 
 namespace ProductsWebApi.Controllers
 {
@@ -14,41 +14,36 @@ namespace ProductsWebApi.Controllers
     {
         private readonly IProductService _productService;
 
-        public ProductController(IProductService productService)
-        {
-            _productService = productService;
-        }
+        public ProductController(IProductService productService) => _productService = productService;
 
         // GET: api/product
         [HttpGet]
-        public IEnumerable<ProductBase> GetProducts(string name, double? priceMin, double? priceMax)
-        {
-            return _productService.GetProducts(name, priceMin, priceMax);
-        }
+        public IEnumerable<ProductBase> GetProducts(string name, decimal? priceMin, decimal? priceMax) =>
+            _productService.GetProducts(new ProductSearchFilter(name, priceMin, priceMax));
 
         // GET: api/product/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProduct([FromRoute] long id)
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> GetProductById([FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var product = await _productService.GetProduct(id);
+            var product = await _productService.GetProductById(id);
 
-            if (product == null)
+            if (product is null)
             {
                 return NotFound();
             }
 
-            return Ok(product);            
+            return Ok(product);
         }
 
         // PUT: api/product/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:long}")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PutProductEntity([FromRoute] long id, [FromBody] Product product)
+        public async Task<IActionResult> ChangeProduct([FromRoute] long id, [FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -63,54 +58,57 @@ namespace ProductsWebApi.Controllers
             {
                 return NoContent();
             }
-            else
-            {
-                return BadRequest();
-            }
+
+            return BadRequest();
         }
 
         // PUT: api/product/image/5
-        [HttpPut("image/{id}")]
+        [HttpPut("image/{id:long}")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PutProductEntityWithImage(
+        public async Task<IActionResult> ChangeProduct(
             [FromRoute] long id,
             IFormFile image,
             Product product)
         {
             product.Image = image;
 
-            return await PutProductEntity(id, product);
+            return await ChangeProduct(id, product);
         }
 
         // POST: api/product
         [HttpPost]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PostProductEntity([FromBody] Product product)
+        public async Task<IActionResult> AddProduct([FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await _productService.Add(product);
-
-            return CreatedAtAction("PostProductEntity", new { id = product.Id }, product);
+            if (await _productService.Add(product))
+            {
+                return CreatedAtAction("AddProduct", new { id = product.Id }, product);
+            }
+            else
+            {
+                return StatusCode(500, "internal error");
+            }
         }
 
         // POST: api/product/image
         [HttpPost("image")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> PostProductEntityWithImage(IFormFile image, Product product)
+        public async Task<IActionResult> AddProductWithImage(IFormFile image, Product product)
         {
             product.Image = image;
 
-            return await PostProductEntity(product);
+            return await AddProduct(product);
         }
 
         // DELETE: api/product/5
         [Authorize(Roles = "admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProductEntity([FromRoute] long id)
+        [HttpDelete("{id:long}")]
+        public async Task<IActionResult> DeleteProduct([FromRoute] long id)
         {
             if (!ModelState.IsValid)
             {
@@ -121,12 +119,10 @@ namespace ProductsWebApi.Controllers
 
             if (isSuccess)
             {
-                return Ok();
+                return NoContent();
             }
-            else
-            {
-                return BadRequest();
-            }
+
+            return BadRequest();
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ProductsWebApi.Models;
 using System;
+using Products.Web.Infrastructure;
 
 namespace ProductsWebApi.Extensions
 {
@@ -14,17 +14,13 @@ namespace ProductsWebApi.Extensions
         /// <param name="app"></param>
         public static void MigrateDatabase(this IApplicationBuilder app)
         {
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<EFDbContext>().Database;
-                db.SetCommandTimeout(TimeSpan.FromMinutes(5));
-                db.Migrate();
+            using var scope = app.ApplicationServices.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EfDbContext>().Database;
+            db.SetCommandTimeout(TimeSpan.FromMinutes(5));
+            db.Migrate();
 
-                using (var connection = db.GetDbConnection())
-                {
-                    connection.Open();
-                }
-            }
+            using var connection = db.GetDbConnection();
+            connection.Open();
         }
     }
 }
